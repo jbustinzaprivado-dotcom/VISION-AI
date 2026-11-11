@@ -9,6 +9,7 @@ import MiniEscena from '../components/MiniEscena.jsx';
 // Los datos salen de fórmulas fijas: no hay entrenamiento real.
 const MS_POR_EPOCA = 200;
 const MS_POR_ETAPA = 4500;
+const UMBRAL_INICIAL = 0.5;
 const pct = (v) => `${Math.round(v * 100)} %`;
 const dec = (v) => v.toFixed(2).replace('.', ',');
 
@@ -22,7 +23,7 @@ export default function Entrenamiento() {
   const [etapa, setEtapa] = useState(0);
   const [epoca, setEpoca] = useState(0);
   const [automatico, setAutomatico] = useState(false);
-  const [umbral, setUmbral] = useState(0.5);
+  const [umbral, setUmbral] = useState(UMBRAL_INICIAL);
 
   const datos = useMemo(
     () => ({
@@ -39,6 +40,7 @@ export default function Entrenamiento() {
     setEtapa(0);
     setEpoca(0);
     setAutomatico(false);
+    setUmbral(UMBRAL_INICIAL);
   }, [idCaso]);
 
   // Etapa 3: las épocas avanzan solas (o aparecen todas si se pidió menos movimiento).
@@ -54,8 +56,13 @@ export default function Entrenamiento() {
   }, [enEntrenamiento, epoca]);
 
   // Reproducción automática: pasa a la siguiente etapa cuando la actual terminó.
+  // Al llegar a la última etapa se detiene sola (el botón vuelve a "Reproducir todo").
   useEffect(() => {
-    if (!automatico || etapa >= ETAPAS.length - 1) return undefined;
+    if (!automatico) return undefined;
+    if (etapa >= ETAPAS.length - 1) {
+      setAutomatico(false);
+      return undefined;
+    }
     if (enEntrenamiento && epoca < EPOCAS) return undefined;
     const id = setTimeout(() => setEtapa((e) => e + 1), MS_POR_ETAPA);
     return () => clearTimeout(id);
@@ -66,6 +73,15 @@ export default function Entrenamiento() {
     setEtapa(0);
     setEpoca(0);
     setAutomatico(false);
+    setUmbral(UMBRAL_INICIAL);
+  };
+  // Desde la última etapa, "Reproducir todo" vuelve a empezar desde el principio.
+  const alternarReproduccion = () => {
+    if (automatico) return setAutomatico(false);
+    if (etapa === ETAPAS.length - 1) {
+      reiniciar();
+    }
+    setAutomatico(true);
   };
 
   return (
@@ -109,7 +125,7 @@ export default function Entrenamiento() {
         <button type="button" className="secundario" onClick={() => irA(etapa + 1)} disabled={etapa === ETAPAS.length - 1}>
           Siguiente
         </button>
-        <button type="button" onClick={() => setAutomatico((a) => !a)}>
+        <button type="button" onClick={alternarReproduccion}>
           {automatico ? 'Detener reproducción' : 'Reproducir todo'}
         </button>
         <button type="button" className="secundario" onClick={reiniciar}>
