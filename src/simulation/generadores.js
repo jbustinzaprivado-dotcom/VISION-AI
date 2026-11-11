@@ -4,6 +4,7 @@
 import { OPCIONES_INICIALES, RIESGOS, generarAlmacen } from './generador.js';
 import { CADENCIAS, OPCIONES_CALIDAD, RIESGOS_CALIDAD, VELOCIDADES_CINTA, generarCalidad } from './generadorCalidad.js';
 import { AFLUENCIAS, OPCIONES_TIENDA, RIESGOS_TIENDA, generarTienda } from './generadorTienda.js';
+import { OPCIONES_SEGURIDAD, RIESGOS_SEGURIDAD, generarSeguridad } from './generadorSeguridad.js';
 
 const lista = (obj) => Object.entries(obj).map(([valor, d]) => ({ valor, texto: d.nombre }));
 const numeros = (desde, hasta) => Array.from({ length: hasta - desde + 1 }, (_, i) => ({ valor: desde + i, texto: String(desde + i) }));
@@ -28,6 +29,16 @@ export const GENERADORES = {
     campos: [
       { id: 'afluencia', etiqueta: 'Afluencia de clientes', valores: lista(AFLUENCIAS) },
       { id: 'riesgo', etiqueta: 'Riesgo de congestión', valores: lista(RIESGOS_TIENDA) },
+    ],
+  },
+  'GEN-01': {
+    caso: 'CU-01',
+    nombre: 'Planta generada',
+    generar: generarSeguridad,
+    opcionesIniciales: OPCIONES_SEGURIDAD,
+    campos: [
+      { id: 'trabajadores', etiqueta: 'Trabajadores', valores: numeros(2, 6), numerico: true },
+      { id: 'riesgo', etiqueta: 'Riesgo de incidentes', valores: lista(RIESGOS_SEGURIDAD) },
     ],
   },
   'GEN-03': {

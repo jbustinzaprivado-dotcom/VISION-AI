@@ -100,6 +100,6 @@ describe('registro de generadores', () => {
     expect(guionDeSesion({ caso: 'CU-02', semilla: 11, generado: almacen.generado }, casoPorId)).toEqual(almacen);
     expect(guionDeSesion({ caso: 'CU-03', semilla: 11, generado: calidad.generado }, casoPorId)).toEqual(calidad);
     expect(guionDeSesion({ caso: 'CU-03', semilla: 2026, generado: null }, casoPorId)).toBe(casoPorId('CU-03'));
-    expect(Object.values(GENERADORES).map((g) => g.caso)).toEqual(['CU-02', 'CU-04', 'CU-03']);
+    expect(Object.values(GENERADORES).map((g) => g.caso)).toEqual(['CU-02', 'CU-04', 'CU-01', 'CU-03']);
   });
 });

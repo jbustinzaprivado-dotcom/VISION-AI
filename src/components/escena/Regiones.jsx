@@ -20,9 +20,14 @@ export function RegionDibujo({ region: r, px, py, t }) {
     <Group x={x} y={y}>
       <Contenido clase={r.clase} w={w} h={h} color={color} t={t} cerrada={cerrada} velocidad={r.atributos?.velocidad ?? 0.1} />
       <Rect width={w} height={h} stroke={color} strokeWidth={1} opacity={cerrada ? 0.35 : 0.7} dash={cerrada ? [6, 4] : undefined} />
-      {/* El nombre va abajo a la izquierda: arriba quedan las etiquetas de detección y de las capas. */}
-      <Rect x={3} y={h - 17} width={nombre.length * 6.1 + 8} height={14} fill="rgba(2,6,23,0.55)" cornerRadius={3} />
-      <Text text={nombre.toUpperCase()} x={7} y={h - 15} {...ETIQUETA} />
+      {/* El nombre va abajo a la izquierda: arriba quedan las etiquetas de detección y de las capas.
+          Las salidas de emergencia ya llevan su rótulo "SALIDA" (y son angostas): no repiten el nombre. */}
+      {r.clase !== 'salida-emergencia' && (
+        <>
+          <Rect x={3} y={h - 17} width={nombre.length * 6.1 + 8} height={14} fill="rgba(2,6,23,0.55)" cornerRadius={3} />
+          <Text text={nombre.toUpperCase()} x={7} y={h - 15} {...ETIQUETA} />
+        </>
+      )}
     </Group>
   );
 }

@@ -32,7 +32,8 @@ function tramosConMasDe6(g, s) {
       }
     }
   }
-  for (const [region, t0] of Object.entries(desde)) if (t0 != null) tramos.push({ region, duracion: g.duracion - t0, abierto: true });
+  // Sigue lleno en el último cuadro: se mide hasta el cuadro siguiente, como los tramos cerrados.
+  for (const [region, t0] of Object.entries(desde)) if (t0 != null) tramos.push({ region, duracion: g.duracion - t0 + 1 / 12, abierto: true });
   return tramos;
 }
 

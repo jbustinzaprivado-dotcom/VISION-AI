@@ -273,9 +273,34 @@ Tercer generador procedural, en **Análisis visual** → **CU-04 · Tienda gener
 - **Congestión (RN-04.1):** hay **exactamente una alerta** por cada vez que una región (pasillo o caja) tuvo más de 6 personas durante más de 5 s.
 - **Riesgo:** el riesgo alto produce en promedio más congestión que el bajo.
 
+## Planta generada (CU-01)
+
+Cuarto generador procedural, en **Análisis visual** → **CU-01 · Planta generada**. Lo arma [`generadorSeguridad.js`](src/simulation/generadorSeguridad.js).
+
+**Qué varía con cada semilla:**
+- **Distribución:** una o dos áreas de trabajo, el acceso, la vía de circulación y una o dos salidas de emergencia.
+- **Trabajadores:** entran por el acceso y recorren su área. Cada uno puede tener como mucho un incidente:
+  - sin casco o sin chaleco (a veces se lo ponen más tarde);
+  - poco visible.
+- **Carro de carga:** recorre la vía. A veces se estaciona frente a una salida durante 3 a 13 s y luego vuelve.
+
+**Opciones:**
+
+| Opción | Valores |
+| --- | --- |
+| Trabajadores | 2 a 6 |
+| Riesgo de incidentes | Bajo, medio o alto (más faltas de equipo y más bloqueos de salida; con riesgo alto, dos carros) |
+
+**Pruebas** ([`generadorSeguridad.test.js`](src/tests/generadorSeguridad.test.js)):
+- **Validez:** las plantas son válidas con 2 a 6 trabajadores y cualquier riesgo; la misma semilla repite la planta.
+- **Equipo (RN-01.1):** hay **exactamente una alerta** por cada vez que un trabajador estuvo sin casco o sin chaleco en el área durante más de 2 s.
+- **Poca visibilidad (RN-01.3):** una advertencia por cada vez que una figura poco visible entró al área.
+- **Salida obstruida (RN-01.2):** una alerta por cada vez que una salida estuvo obstruida más del 50 % durante más de 5 s.
+- **Riesgo:** el riesgo alto produce más incidentes que el bajo.
+
 ### Registro de generadores
 
-[`generadores.js`](src/simulation/generadores.js) reúne los generadores (almacén, tienda y calidad) con sus opciones:
+[`generadores.js`](src/simulation/generadores.js) reúne los cuatro generadores (almacén, tienda, planta y calidad) con sus opciones:
 - **Pantalla de análisis:** arma sus botones y selectores desde ese registro.
 - **Evidencia y historial:** usan `guionDeSesion` para reconstruir exactamente la escena de cualquier sesión generada.
 - **Nuevos generadores:** basta con registrarlos ahí.
