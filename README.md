@@ -182,6 +182,8 @@ En **Análisis visual** se activan o apagan capas sobre la escena. La leyenda ba
 | Ocupación | Cada región de verde (vacía) a rojo (llena), con el porcentaje escrito |
 | Mapa de calor | Intensidad según las personas que hay en cada región, con el número escrito |
 | Cambios | Borde punteado en las regiones cuya ocupación cambió respecto del inicio (comparación entre dos momentos) |
+| Detecciones | Caja cian y clase de cada figura, como la marcaría un detector. Se calcula con la geometría, no con imágenes |
+| Trayectorias | Recorrido de los últimos 4 segundos de cada figura que se mueve |
 | Figuras | La escena animada |
 
 Bajo la escena se muestran los **cuadros por segundo** dibujados, para comprobar la fluidez. El mínimo pedido es 10, y en un equipo normal se dibujan unos 60.
@@ -198,6 +200,36 @@ La pantalla **Entrenamiento** muestra en seis etapas cómo se prepararía un mod
 6. **Modelo de prototipo listo:** insignia final.
 
 Los datos salen de [`entrenamiento.js`](src/training/entrenamiento.js), con fórmulas fijas y semilla, así que son siempre iguales. Con "Reproducir todo" las etapas avanzan solas. Si el sistema pide menos movimiento, las curvas aparecen completas sin animación.
+
+## Diseño de la interfaz
+
+La interfaz busca un acabado profesional dentro de lo que permite un sitio estático gratuito.
+
+### Sistema de diseño
+
+- **Estilos:** [`styles.css`](src/styles.css) define los colores, radios, sombras y tiempos como variables, en modo **claro** y **oscuro**.
+- **Tema:** el botón de la cabecera alterna entre sistema, claro y oscuro, y la elección se recuerda en el navegador ([`useTema.js`](src/components/ui/useTema.js)).
+- **Tipografía e íconos:** Inter, incluida en la aplicación sin depender de servicios externos, e íconos Lucide.
+- **Avisos emergentes** ([`Avisos.jsx`](src/components/ui/Avisos.jsx)): confirman acciones como revisar o cerrar una alerta, guardar una regla, exportar un CSV o cargar sesiones de ejemplo. También anuncian cada alerta nueva mientras corre la escena.
+- **Diálogo de confirmación** ([`Dialogo.jsx`](src/components/ui/Dialogo.jsx)): reemplaza al `confirm` del navegador. Lleva el foco al botón principal, se cierra con Escape y es accesible con teclado.
+- **Dashboard:** tarjetas con íconos y enlaces, gráfico de barras por caso, gráfico de dona por severidad, listas de pendientes y sesiones recientes, y esqueleto mientras carga.
+- **Movimiento:** las pantallas y las listas aparecen con transiciones suaves, que se desactivan si el sistema pide menos movimiento.
+
+### Escena con aspecto de cámara de seguridad (DT-7)
+
+El visor ([`VisorEscena.jsx`](src/components/VisorEscena.jsx)) se ve como la imagen de una cámara en el techo. Todo son figuras vectoriales: no hay imágenes ni videos (DT-2).
+
+- **Suelo y regiones** ([`escena/Regiones.jsx`](src/components/escena/Regiones.jsx)): cada tipo de zona tiene su aspecto.
+  - Los pasillos llevan carril, las estanterías módulos con cajas y la zona de tránsito un borde de seguridad amarillo y negro.
+  - La zona restringida va con rayado rojo y la salida de emergencia con su rótulo.
+  - La cinta transportadora tiene rodillos que avanzan y el punto de inspección una línea de escaneo.
+- **Figuras** ([`escena/Figuras.jsx`](src/components/escena/Figuras.jsx)): todas proyectan sombra.
+  - Las personas tienen casco y chaleco con franjas reflectantes; la figura "poco visible" se ve translúcida.
+  - El montacargas tiene mástil, horquillas, ruedas y una baliza que parpadea al moverse.
+  - Los pallets tienen tablas, las cajas cinta adhesiva y los carros ruedas.
+  - Los productos muestran volumen, etiqueta, defecto y pieza faltante.
+- **Interfaz de cámara:** encuadre con esquinas y líneas de barrido. Abajo a la izquierda aparecen el nombre de la cámara (por ejemplo, "CAM-02 · ALMACÉN INTELIGENTE"), el indicador REC con el tiempo de la sesión y el rótulo PROTOTIPO. En pantallas angostas se muestra en versión compacta.
+- **Alertas activas:** el marco rojo late con el tiempo de la simulación, salvo que el sistema pida menos movimiento.
 
 ## Reglas, alertas y sesiones (fase 6)
 

@@ -7,6 +7,8 @@ import { useSesion } from '../auth/SesionContext.jsx';
 import { alcanceExportacion } from '../auth/roles.js';
 import { ORDEN_CASOS } from '../data/indicadores.js';
 import { casoPorId } from '../simulation/casos.js';
+import { useAvisos } from '../components/ui/Avisos.jsx';
+import { ChevronDown, ChevronUp, Download, FileSpreadsheet } from 'lucide-react';
 
 // Historial de sesiones con filtros, detalle y los tres reportes CSV:
 // resumen de una sesión, historial filtrado y reporte de alertas.
@@ -15,6 +17,7 @@ const hoy = () => fechaLocal();
 
 export default function Historial() {
   const { usuario } = useSesion();
+  const avisar = useAvisos();
   const sesiones = useLiveQuery(() => db.sesiones.orderBy('creadaEn').reverse().toArray(), []);
   const alertas = useLiveQuery(() => db.alertas.toArray(), []);
   const [filtros, setFiltros] = useState({ caso: 'todos', estado: 'todos', propias: false });
@@ -39,13 +42,15 @@ export default function Historial() {
     (alcance === 'propios' ? ', alcance=propias' : '');
   const meta = (reporte) => ({ reporte, usuario: `${usuario.nombre} (${usuario.rol})`, fecha: new Date().toISOString(), filtros: textoFiltros });
 
+  // Descarga el CSV y confirma con un aviso cuántas filas se exportaron.
+  const exportar = (nombre, filas, columnas, reporte) => {
+    descargarCSV(nombre, aCSV(filas, columnas, meta(reporte)));
+    avisar({ tipo: 'exito', titulo: `${reporte} exportado`, texto: `${filas.length} ${filas.length === 1 ? 'fila' : 'filas'} en ${nombre}` });
+  };
   const exportarHistorial = () =>
-    descargarCSV(`vision-ai-historial-${hoy()}.csv`, aCSV(exportables, COLUMNAS_SESIONES, meta('Historial de sesiones')));
+    exportar(`vision-ai-historial-${hoy()}.csv`, exportables, COLUMNAS_SESIONES, 'Historial de sesiones');
   const exportarAlertas = () =>
-    descargarCSV(
-      `vision-ai-alertas-${hoy()}.csv`,
-      aCSV(alertas.filter((a) => idsExportables.has(a.sesion)), COLUMNAS_ALERTAS, meta('Reporte de alertas')),
-    );
+    exportar(`vision-ai-alertas-${hoy()}.csv`, alertas.filter((a) => idsExportables.has(a.sesion)), COLUMNAS_ALERTAS, 'Reporte de alertas');
 
   return (
     <div className="historial-pagina">
@@ -80,9 +85,11 @@ export default function Historial() {
       {alcance !== 'ninguno' && (
         <div className="botones">
           <button type="button" onClick={exportarHistorial} disabled={exportables.length === 0}>
+            <Download className="icono" aria-hidden="true" />
             Exportar historial (CSV)
           </button>
           <button type="button" className="secundario" onClick={exportarAlertas} disabled={exportables.length === 0}>
+            <FileSpreadsheet className="icono" aria-hidden="true" />
             Exportar reporte de alertas (CSV)
           </button>
           {alcance === 'propios' && <span className="nota">Como operador exportas solo tus sesiones ({exportables.length}).</span>}
@@ -113,7 +120,7 @@ export default function Historial() {
                 abierta={abierta === s.id}
                 alternar={() => setAbierta((id) => (id === s.id ? null : s.id))}
                 puedeExportar={idsExportables.has(s.id)}
-                meta={meta}
+                exportar={exportar}
               />
             ))}
           </tbody>
@@ -123,12 +130,14 @@ export default function Historial() {
   );
 }
 
-function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, meta }) {
+function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, exportar }) {
   const r = s.resumen;
   const exportarResumen = () =>
-    descargarCSV(
+    exportar(
       `vision-ai-sesion-${s.caso}-${s.id.slice(0, 8)}.csv`,
-      aCSV(alertas, COLUMNAS_ALERTAS, meta(`Resumen de sesión ${s.id} (${s.caso}, ${ETIQUETAS_SESION[s.estado]})`)),
+      alertas,
+      COLUMNAS_ALERTAS,
+      `Resumen de sesión ${s.id} (${s.caso}, ${ETIQUETAS_SESION[s.estado]})`,
     );
   return (
     <>
@@ -144,6 +153,7 @@ function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, meta
         <td>{alertas.length}</td>
         <td>
           <button type="button" className="secundario" onClick={alternar} aria-expanded={abierta}>
+            {abierta ? <ChevronUp className="icono" aria-hidden="true" /> : <ChevronDown className="icono" aria-hidden="true" />}
             {abierta ? 'Ocultar' : 'Detalle'}
           </button>
         </td>
@@ -180,6 +190,7 @@ function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, meta
             )}
             {puedeExportar && (
               <button type="button" className="secundario" onClick={exportarResumen}>
+                <Download className="icono" aria-hidden="true" />
                 Exportar resumen de esta sesión (CSV)
               </button>
             )}

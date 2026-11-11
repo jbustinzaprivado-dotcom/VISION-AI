@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { guardarVersionRegla, historialRegla, reglasVigentes } from '../data/repositorio.js';
 import { useSesion } from '../auth/SesionContext.jsx';
+import { useAvisos } from '../components/ui/Avisos.jsx';
+import { Save } from 'lucide-react';
 import reglasJson from '../rules/reglas.json';
 import { casoPorId } from '../simulation/casos.js';
 
@@ -54,6 +56,7 @@ export default function Reglas() {
 
 function FilaRegla({ regla }) {
   const { usuario } = useSesion();
+  const avisar = useAvisos();
   const c = regla.condicion;
   const tieneUmbral = typeof c.umbral === 'number';
   const proporcion = ES_PROPORCION.includes(c.tipo);
@@ -86,6 +89,7 @@ function FilaRegla({ regla }) {
         usuario,
       );
       setMensaje({ ok: true, texto: `Guardada como versión ${nueva.version}.` });
+      avisar({ tipo: 'exito', titulo: `${regla.codigo ?? regla.id} guardada como versión ${nueva.version}`, texto: 'Las sesiones nuevas usarán este valor.' });
     } catch (err) {
       setMensaje({ ok: false, texto: err.message });
     }
@@ -126,7 +130,10 @@ function FilaRegla({ regla }) {
         <label className="casilla">
           <input type="checkbox" checked={valores.activa} onChange={cambiar('activa')} /> Activa
         </label>
-        <button type="submit">Guardar versión</button>
+        <button type="submit">
+          <Save className="icono" aria-hidden="true" />
+          Guardar versión
+        </button>
       </div>
       {mensaje && (
         <p className={mensaje.ok ? 'nota' : 'error'} role={mensaje.ok ? 'status' : 'alert'}>

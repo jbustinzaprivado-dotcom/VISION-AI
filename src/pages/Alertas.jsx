@@ -9,6 +9,9 @@ import { casoPorId } from '../simulation/casos.js';
 import { generarCuadro } from '../simulation/motor.js';
 import MiniEscena from '../components/MiniEscena.jsx';
 import { ETIQUETA_SEVERIDAD } from '../components/PanelAlertas.jsx';
+import Dialogo from '../components/ui/Dialogo.jsx';
+import { useAvisos } from '../components/ui/Avisos.jsx';
+import { CheckCheck, Eye, EyeOff, Lock } from 'lucide-react';
 
 // Alertas: filtrar → ver evidencia → revisar (operador) → cerrar con observación (supervisor).
 const ESTADOS = { nueva: 'Nueva', revisada: 'Revisada', cerrada: 'Cerrada' };
@@ -93,15 +96,37 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
   const permitido =
     (siguiente === 'revisada' && puede('revisarAlertas')) || (siguiente === 'cerrada' && puede('cerrarAlertas'));
 
-  async function avanzar() {
-    if (siguiente === 'cerrada' && !window.confirm('¿Cerrar la alerta? Esta acción no se puede deshacer.')) return;
-    setGuardando(true);
+  const avisar = useAvisos();
+  const [confirmando, setConfirmando] = useState(false);
+
+  // Cerrar pide confirmación con un diálogo propio; revisar se aplica directo.
+  function avanzar() {
     setError(null);
+    if (siguiente === 'cerrada') {
+      if (!observacion.trim()) {
+        setError('Para cerrar la alerta hay que escribir una observación.');
+        return;
+      }
+      setConfirmando(true);
+      return;
+    }
+    guardar();
+  }
+
+  async function guardar() {
+    setConfirmando(false);
+    setGuardando(true);
     try {
       await cambiarEstadoAlerta(a.id, siguiente, observacion, usuario);
       setObservacion('');
+      avisar({
+        tipo: 'exito',
+        titulo: siguiente === 'revisada' ? `Alerta ${a.codigo} revisada` : `Alerta ${a.codigo} cerrada`,
+        texto: siguiente === 'revisada' ? 'Queda pendiente de cierre por un supervisor.' : 'Se registró la observación.',
+      });
     } catch (e) {
       setError(e.message);
+      avisar({ tipo: 'error', titulo: 'No se pudo cambiar la alerta', texto: e.message });
     } finally {
       setGuardando(false);
     }
@@ -127,6 +152,7 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
       )}
 
       <button type="button" className="secundario" onClick={() => setVerEvidencia((v) => !v)} aria-expanded={verEvidencia}>
+        {verEvidencia ? <EyeOff className="icono" aria-hidden="true" /> : <Eye className="icono" aria-hidden="true" />}
         {verEvidencia ? 'Ocultar evidencia' : 'Ver evidencia'}
       </button>
       {verEvidencia && semilla != null && <Evidencia alerta={a} semilla={semilla} />}
@@ -140,6 +166,7 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
             </label>
           )}
           <button type="button" onClick={avanzar} disabled={guardando}>
+            {siguiente === 'revisada' ? <CheckCheck className="icono" aria-hidden="true" /> : <Lock className="icono" aria-hidden="true" />}
             {siguiente === 'revisada' ? 'Marcar como revisada' : 'Cerrar alerta'}
           </button>
         </div>
@@ -148,6 +175,15 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
         <p className="nota">Revisada. Solo el supervisor o el administrador pueden cerrarla.</p>
       )}
       {error && <p className="error" role="alert">{error}</p>}
+      <Dialogo
+        abierto={confirmando}
+        peligro
+        titulo={`¿Cerrar la alerta ${a.codigo}?`}
+        texto="Una alerta cerrada no se puede reabrir. Se guardará tu observación y quién la cerró."
+        confirmar="Cerrar alerta"
+        onConfirmar={guardar}
+        onCancelar={() => setConfirmando(false)}
+      />
     </li>
   );
 }

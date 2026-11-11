@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CASOS } from '../simulation/casos.js';
 import { eventoActual, generarCuadro } from '../simulation/motor.js';
 import { useSimulacion } from '../simulation/useSimulacion.js';
@@ -10,6 +10,7 @@ import PanelAlertas from '../components/PanelAlertas.jsx';
 import { useSesion } from '../auth/SesionContext.jsx';
 import { useSesionAnalisis } from '../data/useSesionAnalisis.js';
 import { alertasActivas } from '../rules/motorReglas.js';
+import { useAvisos } from '../components/ui/Avisos.jsx';
 
 // Análisis visual: elegir caso → ver la escena simulada → controlarla.
 // El análisis de regiones (fase 4) y las alertas (fase 6) se agregan sobre esta pantalla.
@@ -18,13 +19,33 @@ export default function Analisis() {
   const guion = CASOS.find((c) => c.caso === idCaso);
   const [semilla, setSemilla] = useState(guion.semilla);
   const [presentacion, setPresentacion] = useState(true);
-  const [capas, setCapas] = useState(['regiones', 'figuras']);
+  const [capas, setCapas] = useState(['regiones', 'detecciones', 'figuras']);
   const { reloj, escena, controles, fps } = useSimulacion(guion, semilla);
   const { usuario } = useSesion();
   const { eventos, sesion, acciones, error, cargando } = useSesionAnalisis({ guion, semilla, reloj, controles, usuario });
   const ocurridos = useMemo(() => eventos.filter((e) => e.t <= reloj.t), [eventos, reloj.t]);
   const activas = useMemo(() => alertasActivas(eventos, reloj.t), [eventos, reloj.t]);
   const controlesSesion = { ...controles, ...acciones };
+
+  // Avisos emergentes: cada alerta nueva mientras la escena corre y el fin de la sesión.
+  const avisar = useAvisos();
+  const alertasVistas = useRef(0);
+  const cantidadAlertas = ocurridos.filter((e) => e.tipo === 'alerta').length;
+  useEffect(() => {
+    if (cantidadAlertas > alertasVistas.current && !reloj.pausado) {
+      const nueva = ocurridos.filter((e) => e.tipo === 'alerta').at(-1);
+      avisar({ tipo: 'alerta', titulo: `Alerta ${nueva.severidad} · ${nueva.codigo}`, texto: `${nueva.mensaje} (${nueva.objetivo})` });
+    }
+    alertasVistas.current = cantidadAlertas;
+  }, [cantidadAlertas, ocurridos, reloj.pausado, avisar]);
+  const terminadaAntes = useRef(false);
+  useEffect(() => {
+    const terminada = Boolean(sesion?.terminada);
+    if (terminada && !terminadaAntes.current) {
+      avisar({ tipo: 'exito', titulo: 'Sesión completada', texto: `${guion.caso} se guardó en el historial con ${cantidadAlertas} ${cantidadAlertas === 1 ? 'alerta' : 'alertas'}.` });
+    }
+    terminadaAntes.current = terminada;
+  }, [sesion, guion, cantidadAlertas, avisar]);
 
   const alternarCapa = (id) =>
     setCapas((actuales) => (actuales.includes(id) ? actuales.filter((c) => c !== id) : [...actuales, id]));
@@ -85,7 +106,7 @@ export default function Analisis() {
 
       <div className="analisis-cuerpo">
         <div className="analisis-escena">
-          <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} />
+          <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion} />
           <Leyenda capas={capas} />
 
           {presentacion && (
@@ -121,7 +142,9 @@ function Leyenda({ capas }) {
     ocupacion: 'Ocupación: de verde (vacía) a rojo (llena), con el porcentaje escrito.',
     calor: 'Mapa de calor: más intenso cuantas más personas hay en la región; se indica el número.',
     cambios: 'Cambios: borde punteado en las regiones cuya ocupación cambió respecto del inicio (más grueso desde 20 puntos).',
-    figuras: 'Personas: casco amarillo, chaleco naranja; translúcida = poco visible. Productos: etiqueta blanca, defecto rojo.',
+    detecciones: 'Detecciones: caja cian y clase de cada figura, como la marcaría un detector (calculada con la geometría, no con imágenes).',
+    trayectorias: 'Trayectorias: recorrido de los últimos 4 segundos de cada figura que se mueve.',
+    figuras: 'Personas: casco amarillo, chaleco naranja con franjas; translúcida = poco visible. Productos: etiqueta blanca, defecto rojo. Montacargas: baliza intermitente al moverse.',
   };
   const activos = capas.filter((c) => textos[c]);
   if (activos.length === 0) return null;

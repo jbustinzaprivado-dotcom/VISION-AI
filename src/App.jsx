@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { SesionProvider } from './auth/SesionContext.jsx';
+import { AvisosProvider } from './components/ui/Avisos.jsx';
 import Layout from './app/Layout.jsx';
 import RutaProtegida from './app/RutaProtegida.jsx';
 import Ingresar from './pages/Ingresar.jsx';
@@ -75,35 +76,37 @@ const PANTALLAS = [
 export default function App() {
   return (
     <SesionProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/ingresar" element={<Ingresar />} />
-          <Route
-            element={
-              <RutaProtegida>
-                <Layout />
-              </RutaProtegida>
-            }
-          >
-            {PANTALLAS.map((p) => (
-              <Route
-                key={p.ruta}
-                path={p.ruta}
-                element={
-                  <RutaProtegida permiso={p.permiso}>
-                    {p.componente ? (
-                      <p.componente />
-                    ) : (
-                      <PantallaPendiente titulo={p.titulo} descripcion={p.descripcion} fase={p.fase} />
-                    )}
-                  </RutaProtegida>
-                }
-              />
-            ))}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AvisosProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/ingresar" element={<Ingresar />} />
+            <Route
+              element={
+                <RutaProtegida>
+                  <Layout />
+                </RutaProtegida>
+              }
+            >
+              {PANTALLAS.map((p) => (
+                <Route
+                  key={p.ruta}
+                  path={p.ruta}
+                  element={
+                    <RutaProtegida permiso={p.permiso}>
+                      {p.componente ? (
+                        <p.componente />
+                      ) : (
+                        <PantallaPendiente titulo={p.titulo} descripcion={p.descripcion} fase={p.fase} />
+                      )}
+                    </RutaProtegida>
+                  }
+                />
+              ))}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AvisosProvider>
     </SesionProvider>
   );
 }
