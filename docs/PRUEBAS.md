@@ -23,7 +23,7 @@ Resultado del 10 de noviembre de 2026, sobre la versión compilada (`npm run bui
 | --- | --- |
 | Escena fluida (10 cuadros por segundo o más) | 72 cuadros/s dibujados con todas las capas; el análisis corre a 12 cuadros/s |
 | La misma semilla produce la misma sesión | PF-02 ✅ |
-| Funciona en Chrome, Edge y Firefox | Probado en un navegador Chromium, que es el mismo motor de Chrome y Edge. **Falta abrirla en Firefox** antes de entregar |
+| Funciona en Chrome, Edge y Firefox | ✅ Probado en un navegador Chromium, el mismo motor de Chrome y Edge, y en Firefox sobre la versión publicada (https://vision-ai-bice-delta.vercel.app) |
 | Pruebas automáticas de reglas y cálculos | 126 pruebas en verde (`npm run test`) |
 | Rótulo PROTOTIPO siempre visible | En la cabecera, el visor, el entrenamiento, los CSV y la bandeja |
 | Carga en menos de 3 segundos | 98 ms en local. En internet depende de la conexión; el build va repartido en archivos para que se carguen en paralelo |

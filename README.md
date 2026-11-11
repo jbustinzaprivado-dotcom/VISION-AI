@@ -324,7 +324,7 @@ Si una pantalla falla, la aplicación muestra un mensaje con **Reintentar** en l
 - [x] El rótulo PROTOTIPO se ve siempre y no se usa ninguna imagen ni video.
 - [x] El documento (este README) está actualizado y hay un [guion de presentación](docs/GUION_PRESENTACION.md).
 - [x] Publicada en Vercel (D4): https://vision-ai-bice-delta.vercel.app. Se comprobó que carga sin pedir login, que abrir una ruta directa (`/analisis`) no da 404, que el almacén genera sus alertas a los 23 s y a los 35 s, que el historial guarda la sesión y que no hay errores.
-- [ ] **Probar en Firefox.** Chrome y Edge usan el mismo motor que el navegador con el que se probó.
+- [x] Funciona en Chrome, Edge y Firefox. Firefox se probó sobre la versión publicada; Chrome y Edge usan el mismo motor que el navegador de las pruebas.
 - [x] Código en GitHub con la rama `main` funcionando.
 - [ ] Ensayar el guion de presentación.
 - [ ] Decidir el nombre, el logotipo y los colores finales (D5). Los actuales son provisionales.
@@ -340,4 +340,4 @@ Si una pantalla falla, la aplicación muestra un mensaje con **Reintentar** en l
 | 5. Visor | Mapas, capas, controles y animación de entrenamiento | Hecha |
 | 6. Reglas y alertas | Motor de reglas y ciclo de alertas | Hecha |
 | 7. Historial y reportes | Dashboard, historial, CSV y bandeja simulada | Hecha |
-| 8. Pruebas y presentación | Pruebas, publicación y guion de presentación | Hecha (falta probar en Firefox) |
+| 8. Pruebas y presentación | Pruebas, publicación y guion de presentación | Hecha |
