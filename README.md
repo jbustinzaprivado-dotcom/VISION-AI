@@ -243,9 +243,39 @@ Segundo generador procedural, en **Análisis visual** → **CU-03 · Línea de c
 - **Clasificación:** en 36 líneas, **cada producto pasa por el punto de inspección y recibe exactamente la clasificación que le corresponde** según sus atributos, ni más ni menos.
 - **Resumen:** el conteo del generador coincide con el resumen que se guarda en el historial (no conformes, con observación, productos).
 
+## Tienda generada (CU-04)
+
+Tercer generador procedural, en **Análisis visual** → **CU-04 · Tienda generada**. Lo arma [`generadorTienda.js`](src/simulation/generadorTienda.js).
+
+**Qué varía con cada semilla:**
+- **Distribución:** 2 o 3 pasillos con su estante, 2 o 3 cajas y la posición de la entrada.
+- **La jornada de clientes:**
+  - llegan por la entrada, solos o en grupos de 3 a 5;
+  - recorren un pasillo por encima o por debajo del estante, sin atravesarlo;
+  - hacen fila en la caja abierta con menos gente;
+  - pagan y salen por el lado de las cajas, así que no vuelven a cruzar la entrada.
+
+**Simulación de filas:** cada caja atiende a un cliente por vez, durante 4 a 6,5 s.
+- Si una caja supera 6 personas y hay otra cerrada, esta **se abre** unos segundos después y atiende a los que llegan desde entonces.
+- Los que no caben en la caja esperan afuera, en el pasillo frente a las cajas.
+
+**Opciones:**
+
+| Opción | Valores |
+| --- | --- |
+| Afluencia de clientes | Baja (9), media (14) o alta (20) |
+| Riesgo de congestión | Bajo (todas las cajas abiertas, sin grupos), medio o alto (menos cajas abiertas, más grupos y llegadas más seguidas) |
+
+**Pruebas** ([`generadorTienda.test.js`](src/tests/generadorTienda.test.js)):
+- **Validez:** las tiendas son válidas con cualquier afluencia y riesgo, y siempre llegan todos los clientes elegidos.
+- **Rutas:** ningún cliente atraviesa un estante ni entra a una caja antes de que se abra.
+- **Afluencia (RN-04.2):** cada cliente suma **exactamente una vez**.
+- **Congestión (RN-04.1):** hay **exactamente una alerta** por cada vez que una región (pasillo o caja) tuvo más de 6 personas durante más de 5 s.
+- **Riesgo:** el riesgo alto produce en promedio más congestión que el bajo.
+
 ### Registro de generadores
 
-[`generadores.js`](src/simulation/generadores.js) reúne los generadores (almacén y calidad) con sus opciones:
+[`generadores.js`](src/simulation/generadores.js) reúne los generadores (almacén, tienda y calidad) con sus opciones:
 - **Pantalla de análisis:** arma sus botones y selectores desde ese registro.
 - **Evidencia y historial:** usan `guionDeSesion` para reconstruir exactamente la escena de cualquier sesión generada.
 - **Nuevos generadores:** basta con registrarlos ahí.
