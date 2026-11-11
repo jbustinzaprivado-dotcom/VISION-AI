@@ -61,6 +61,22 @@ describe('generador procedural del almacén', () => {
     expect(normalizarOpciones({ personas: 99, montacargas: -1, riesgo: 'extremo' })).toEqual({ personas: 6, montacargas: 1, riesgo: 'medio' });
   });
 
+  it('las personas nunca atraviesan las estanterías (caminan por pasillos y corredores)', () => {
+    for (const riesgo of RIESGOS) {
+      for (const s of SEMILLAS.slice(0, 15)) {
+        const g = generarAlmacen(s, { riesgo, personas: 4 });
+        const estanterias = g.regiones.filter((r) => r.clase === 'estanteria');
+        for (let i = 0; i < totalCuadros(g); i += 3) {
+          const cuadro = generarCuadro(g, i, s);
+          for (const o of cuadro.objetos.filter((x) => x.clase === 'persona')) {
+            const pisa = estanterias.find((e) => o.x > e.x && o.x < e.x + e.w && o.y > e.y && o.y < e.y + e.h);
+            expect(pisa, `${riesgo}/${s}: ${o.id} en ${pisa?.id} (t=${cuadro.t})`).toBeUndefined();
+          }
+        }
+      }
+    }
+  });
+
   it('cada escena se analiza completa en menos de medio segundo', () => {
     const inicio = performance.now();
     procesarSesion(generarAlmacen(42, { personas: 6, montacargas: 2, riesgo: 'alto' }), 42, reglas.reglas);

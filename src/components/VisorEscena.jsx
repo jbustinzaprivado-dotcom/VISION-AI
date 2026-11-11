@@ -97,6 +97,8 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [], gu
   }
 
   const compacto = ancho < 520; // en pantallas angostas la interfaz de la cámara se achica
+  const franja = Math.max(12, alto * 0.04); // alto de la franja inferior de la cámara
+  const letra = Math.min(11, franja * 0.62);
   const pulso = quieto ? 1 : (Math.sin(t * 6) + 1) / 2; // 0..1, ligado al tiempo de simulación
   const grabando = quieto || Math.floor(t * 2) % 2 === 0;
 
@@ -246,19 +248,19 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [], gu
             opacity={0.06}
           />
           <Esquinas w={ancho} h={alto} margen={10} largo={22} color="rgba(226,232,240,0.7)" grosor={2} />
-          {/* Rótulo de la cámara y grabación, abajo a la izquierda para no tapar la escena */}
-          <Group x={compacto ? 8 : 14} y={alto - (compacto ? 34 : 48)}>
-            <Rect width={compacto ? 150 : Math.max(200, (guion ? guion.nombre.length + 12 : 16) * 7.2)} height={compacto ? 26 : 36}
-              fill="rgba(2,6,23,0.62)" cornerRadius={4} />
+          {/* Franja inferior de la cámara: nombre, grabación y PROTOTIPO. Ocupa el 4 % final de la
+              escena, donde ninguna región de los guiones ni del generador llega (todas terminan antes). */}
+          <Group y={alto - franja}>
+            <Rect width={ancho} height={franja} fill="rgba(2,6,23,0.62)" />
             <Text text={guion ? (compacto ? `CAM-${guion.caso.slice(3)}` : `CAM-${guion.caso.slice(3)} · ${guion.nombre.toUpperCase()}`) : 'CÁMARA SIMULADA'}
-              x={6} y={compacto ? 3 : 5} fontSize={compacto ? 8 : 10} fontStyle="bold" fill="#e2e8f0" letterSpacing={0.6} />
-            <Circle x={compacto ? 10 : 13} y={compacto ? 18 : 26} radius={compacto ? 3 : 4} fill={grabando ? '#ef4444' : '#7f1d1d'} />
-            <Text text={`REC ${reloj(t)}`} x={compacto ? 17 : 22} y={compacto ? 14 : 20} fontSize={compacto ? 8 : 11} fontStyle="bold" fill="#e2e8f0" fontFamily="monospace" />
-            <Text text="PROTOTIPO" x={compacto ? 98 : 138} y={compacto ? 15 : 21} fontSize={compacto ? 7 : 9} fontStyle="bold" fill="#fbbf24" letterSpacing={1} />
+              x={10} y={(franja - letra) / 2} fontSize={letra} fontStyle="bold" fill="#e2e8f0" letterSpacing={0.6} />
+            <Circle x={ancho / 2 - letra * 4.6} y={franja / 2} radius={letra * 0.38} fill={grabando ? '#ef4444' : '#7f1d1d'} />
+            <Text text={`REC ${reloj(t)}`} x={ancho / 2 - letra * 3.9} y={(franja - letra) / 2} fontSize={letra} fontStyle="bold" fill="#e2e8f0" fontFamily="monospace" />
+            <Text text="PROTOTIPO" width={ancho - 10} align="right" y={(franja - letra * 0.9) / 2} fontSize={letra * 0.9} fontStyle="bold" fill="#fbbf24" letterSpacing={1} />
           </Group>
         </Layer>
       </Stage>
-      {/* El rótulo PROTOTIPO se dibuja dentro del recuadro de la cámara; este texto es para lectores de pantalla. */}
+      {/* El rótulo PROTOTIPO se dibuja en la franja de la cámara; este texto es para lectores de pantalla. */}
       <span className="oculto">PROTOTIPO: escena simulada, no es una cámara real.</span>
     </div>
   );

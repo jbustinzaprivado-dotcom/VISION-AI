@@ -153,16 +153,23 @@ export function generarAlmacen(semilla, opciones = {}) {
   for (let p = 1; p <= op.personas; p++) {
     const id = `persona-${p}`;
     if (p === 1 && intrusion) {
-      // La persona del incidente camina por un pasillo y entra a la zona restringida.
-      const afuera = { x: r3(restringida.x - 0.03), y: r3(centro(restringida).y) };
+      // La persona del incidente camina por el pasillo más cercano a la zona restringida hasta
+      // el final, sigue por el corredor libre entre las estanterías y las zonas (sin
+      // atravesar estantes) y entra a la zona restringida; luego vuelve por el mismo camino.
+      const pasilloP = restringidaAbajo ? pasillos.at(-1) : pasillos[0];
+      const yP = r3(centro(pasilloP).y);
+      const corredorX = r3(restringida.x - 0.03); // a mitad del hueco entre estanterías y zonas
+      const afuera = { x: corredorX, y: r3(centro(restringida).y) };
       const adentro = { x: r3(restringida.x + restringida.w * 0.45), y: r3(centro(restringida).y + (restringidaAbajo ? -0.02 : 0.02)) };
       const ruta = [
-        { t: r1(Math.max(0, intrusion.inicio - 6)), x: 0.04, y: r3(centro(pasillos.at(-1)).y) },
-        { t: r1(intrusion.inicio - 0.4), x: afuera.x, y: afuera.y },
+        { t: r1(Math.max(0, intrusion.inicio - 6)), x: 0.04, y: yP },
+        { t: r1(intrusion.inicio - 2.2), x: corredorX, y: yP },
+        { t: r1(intrusion.inicio - 0.4), ...afuera },
         { t: intrusion.inicio, ...adentro },
         { t: intrusion.fin, ...adentro },
-        { t: r1(intrusion.fin + 0.6), x: afuera.x, y: afuera.y },
-        { t: r1(intrusion.fin + 6), x: 0.04, y: r3(centro(pasillos.at(-1)).y) },
+        { t: r1(intrusion.fin + 0.6), ...afuera },
+        { t: r1(intrusion.fin + 2.4), x: corredorX, y: yP },
+        { t: r1(intrusion.fin + 6), x: 0.04, y: yP },
       ];
       objetos.push({ id, clase: 'persona', w: 0.03, h: 0.1, ruta: limpiarRuta(ruta), sale: Math.min(DURACION, r1(intrusion.fin + 6.5)) });
       eventos.push({ t: intrusion.inicio, texto: `Una persona entra a la zona restringida${intrusion.conMontacargas ? ' con el montacargas en movimiento cerca' : ''}.` });
