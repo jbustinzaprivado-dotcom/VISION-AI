@@ -9,6 +9,7 @@
 
 - VISION AI **simula** cómo un sistema de visión artificial entiende un entorno: no solo cuenta objetos, sino que divide la escena en regiones, mide su ocupación, detecta obstrucciones y cambios, y genera alertas.
 - **No usa imágenes, videos ni inteligencia artificial real.** La escena se dibuja con figuras a partir de un guion. Por eso todo lleva el rótulo **PROTOTIPO**.
+- De las dos opciones que dio el docente (cámara simulada o cámara real), se eligió la **cámara simulada** (DT-7): permite diseñar casos de riesgo que en la vida real casi nunca se podrían grabar.
 
 ## 2. Roles (1 min)
 
@@ -67,4 +68,5 @@ Elegir uno:
 | ¿Es inteligencia artificial? | No. El análisis calcula con la posición y el tamaño de las figuras que el propio programa dibujó. Enseña el flujo de un sistema de visión, no reconoce imágenes. |
 | ¿Por qué siempre sale igual? | Por la **semilla**. Con otra semilla cambia el pequeño movimiento de las figuras, pero el guion sigue igual. |
 | ¿Dónde se guardan los datos? | En el navegador (IndexedDB). Si se borra, se exporta antes en CSV o se cargan las sesiones de ejemplo. |
-| ¿Y si se quisiera hacer real? | Habría que reemplazar el análisis por un modelo que trabaje con imágenes. Eso está fuera del alcance (decisiones DT-2 y DT-6). |
+| ¿Por qué no usaron una cámara real? | El docente dio dos opciones: cámara simulada o cámara real. Elegimos la simulada (DT-7) porque nos deja proponer los casos de uso. Con una cámara real, salvo en un escenario ideal, solo veríamos situaciones cotidianas. Las que interesan (persona en zona restringida con el montacargas cerca, salida bloqueada, congestión en caja) casi nunca ocurren frente a una cámara y no se pueden provocar a voluntad. Además, la simulación repite cada caso exactamente igual. |
+| ¿Y si se quisiera hacer real? | Habría que reemplazar el análisis por un modelo que trabaje con imágenes de una cámara. Eso está fuera del alcance (decisiones DT-2, DT-6 y DT-7). |

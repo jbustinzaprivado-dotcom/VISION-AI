@@ -11,6 +11,25 @@ Es un **prototipo académico**. Funciona solo en el navegador. No usa imágenes 
 - [Guion de presentación](docs/GUION_PRESENTACION.md)
 - [Resultado de las pruebas PF-01 a PF-10](docs/PRUEBAS.md)
 
+## Decisiones del proyecto
+
+Las decisiones DT-1 a DT-6 están en el documento del proyecto (sección 14):
+
+- **DT-1:** prototipo académico.
+- **DT-2:** sin imágenes ni videos.
+- **DT-3:** todo en el navegador.
+- **DT-4:** el almacén es el caso principal.
+- **DT-5:** Konva y seedrandom.
+- **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO.
+
+Se agrega:
+
+| # | Decisión | Motivo |
+| --- | --- | --- |
+| DT-7 | **Cámara simulada en lugar de cámara real.** El docente dio dos opciones: simular una cámara dentro del sistema, que analice los casos propuestos como animación, o usar una cámara real que analice lo que ocurre en la vida real en casos específicos. Se eligió la **cámara simulada** | Permite proponer libremente los casos de uso. Con una cámara real, salvo en un escenario ideal, los casos serían mayormente cotidianos: situaciones como un montacargas cerca de una persona en zona restringida, una salida de emergencia bloqueada o una fila de siete personas en caja ocurren pocas veces y no se pueden provocar a voluntad. La simulación además repite cada caso exactamente igual en las pruebas y en la presentación |
+
+En el sistema, la "cámara simulada" es el motor de escenas. Genera 12 cuadros por segundo de cada caso a partir de su guion, y cada cuadro pasa por el análisis y el motor de reglas, como lo haría la imagen de una cámara.
+
 ## Cómo funciona, en una línea por paso
 
 Cada cuadro de la escena (12 por segundo) recorre el mismo camino:
