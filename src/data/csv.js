@@ -55,7 +55,7 @@ export const COLUMNAS_SESIONES = [
   { titulo: 'semilla', valor: (s) => s.semilla },
   { titulo: 'velocidad', valor: (s) => n(s.velocidad) },
   { titulo: 'version_guion', valor: (s) => s.versionGuion },
-  { titulo: 'escena_generada', valor: (s) => (s.generado ? `personas=${s.generado.opciones.personas};montacargas=${s.generado.opciones.montacargas};riesgo=${s.generado.opciones.riesgo}` : 'no') },
+  { titulo: 'escena_generada', valor: (s) => (s.generado ? Object.entries(s.generado.opciones).map(([k, v]) => `${k}=${v}`).join(';') : 'no') },
   { titulo: 'alertas', valor: (s) => s.resumen?.alertas ?? '' },
   { titulo: 'advertencias', valor: (s) => s.resumen?.advertencias ?? '' },
   { titulo: 'informativas', valor: (s) => s.resumen?.informativas ?? '' },

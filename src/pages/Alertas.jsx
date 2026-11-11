@@ -6,7 +6,7 @@ import { useSesion } from '../auth/SesionContext.jsx';
 import { esSoloLectura } from '../auth/roles.js';
 import { siguienteEstado } from '../rules/alertas.js';
 import { casoPorId } from '../simulation/casos.js';
-import { guionDeSesion } from '../simulation/generador.js';
+import { guionDeSesion } from '../simulation/generadores.js';
 import { generarCuadro } from '../simulation/motor.js';
 import MiniEscena from '../components/MiniEscena.jsx';
 import { ETIQUETA_SEVERIDAD } from '../components/PanelAlertas.jsx';

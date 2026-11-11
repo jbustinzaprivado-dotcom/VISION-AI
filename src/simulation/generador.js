@@ -242,8 +242,3 @@ function describirIncidentes(intrusion, obstruccion) {
   return partes.length ? partes.join(' y ') : 'sin incidentes planificados';
 }
 
-// Reconstruye el guion de una sesión guardada (para la evidencia y el historial).
-export function guionDeSesion(sesion, casoPorId) {
-  if (sesion?.generado) return generarAlmacen(sesion.semilla, sesion.generado.opciones);
-  return casoPorId(sesion.caso);
-}

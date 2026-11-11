@@ -11,27 +11,28 @@ import { useSesion } from '../auth/SesionContext.jsx';
 import { useSesionAnalisis } from '../data/useSesionAnalisis.js';
 import { alertasActivas } from '../rules/motorReglas.js';
 import { useAvisos } from '../components/ui/Avisos.jsx';
-import { OPCIONES_INICIALES, RIESGOS, generarAlmacen } from '../simulation/generador.js';
+import { GENERADORES } from '../simulation/generadores.js';
 import { Dices, Shuffle } from 'lucide-react';
 import { useVisionPixeles } from '../vision/useVisionPixeles.js';
 import CapturaCamara from '../vision/CapturaCamara.jsx';
 import PanelOpenCV from '../components/PanelOpenCV.jsx';
 import { claveGuion } from '../data/useSesionAnalisis.js';
 
-// Identificador del modo "almacén generado" en el selector de casos.
-const GENERADO = 'GEN-02';
+// Opciones iniciales de cada generador (almacén, línea de calidad...).
+const OPCIONES_GENERADORES = Object.fromEntries(Object.entries(GENERADORES).map(([id, g]) => [id, g.opcionesIniciales]));
 
 // Análisis visual: elegir caso → ver la escena simulada → controlarla.
 // El análisis de regiones (fase 4) y las alertas (fase 6) se agregan sobre esta pantalla.
 export default function Analisis() {
   const [idCaso, setIdCaso] = useState(CASOS[0].caso);
   const [semilla, setSemilla] = useState(CASOS[0].semilla);
-  const [opciones, setOpciones] = useState(OPCIONES_INICIALES);
-  const generado = idCaso === GENERADO;
+  const [opcionesPorGenerador, setOpcionesPorGenerador] = useState(OPCIONES_GENERADORES);
+  const generador = GENERADORES[idCaso] ?? null; // null = guion fijo
+  const opciones = generador ? opcionesPorGenerador[idCaso] : null;
   // Guion fijo del caso, o uno generado a partir de la semilla y las opciones.
   const guion = useMemo(
-    () => (generado ? generarAlmacen(semilla, opciones) : CASOS.find((c) => c.caso === idCaso)),
-    [generado, idCaso, semilla, opciones],
+    () => (generador ? generador.generar(semilla, opciones) : CASOS.find((c) => c.caso === idCaso)),
+    [generador, idCaso, semilla, opciones],
   );
   const [presentacion, setPresentacion] = useState(true);
   const [capas, setCapas] = useState(['regiones', 'detecciones', 'figuras']);
@@ -83,9 +84,13 @@ export default function Analisis() {
 
   function elegirCaso(id) {
     setIdCaso(id);
-    setSemilla(id === GENERADO ? semilla : CASOS.find((c) => c.caso === id).semilla);
+    setSemilla(GENERADORES[id] ? semilla : CASOS.find((c) => c.caso === id).semilla);
   }
-  const cambiarOpcion = (campo) => (e) => setOpciones((o) => ({ ...o, [campo]: campo === 'riesgo' ? e.target.value : Number(e.target.value) }));
+  const cambiarOpcion = (campo) => (e) =>
+    setOpcionesPorGenerador((todas) => ({
+      ...todas,
+      [idCaso]: { ...todas[idCaso], [campo.id]: campo.numerico ? Number(e.target.value) : e.target.value },
+    }));
   const nuevaEscena = () => setSemilla(Math.floor(Math.random() * 1_000_000));
 
   return (
@@ -104,42 +109,32 @@ export default function Analisis() {
               {c.caso} · {c.nombre}
             </button>
           ))}
-          <button
-            type="button"
-            className={generado ? '' : 'secundario'}
-            aria-pressed={generado}
-            onClick={() => elegirCaso(GENERADO)}
-            title="Escena del almacén creada a partir de la semilla: cada semilla es un almacén y una historia distintos"
-          >
-            <Shuffle className="icono" aria-hidden="true" />
-            CU-02 · Almacén generado
-          </button>
+          {Object.entries(GENERADORES).map(([id, g]) => (
+            <button
+              key={id}
+              type="button"
+              className={id === idCaso ? '' : 'secundario'}
+              aria-pressed={id === idCaso}
+              onClick={() => elegirCaso(id)}
+              title="Escena creada a partir de la semilla: cada semilla produce una escena y una historia distintas"
+            >
+              <Shuffle className="icono" aria-hidden="true" />
+              {g.caso} · {g.nombre}
+            </button>
+          ))}
         </div>
-        {generado && (
-          <div className="generador" role="group" aria-label="Opciones del almacén generado">
-            <label>
-              Personas
-              <select value={opciones.personas} onChange={cambiarOpcion('personas')}>
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Montacargas
-              <select value={opciones.montacargas} onChange={cambiarOpcion('montacargas')}>
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-              </select>
-            </label>
-            <label>
-              Riesgo de incidentes
-              <select value={opciones.riesgo} onChange={cambiarOpcion('riesgo')}>
-                {Object.entries(RIESGOS).map(([id, r]) => (
-                  <option key={id} value={id}>{r.nombre}</option>
-                ))}
-              </select>
-            </label>
+        {generador && (
+          <div className="generador" role="group" aria-label={`Opciones: ${generador.nombre}`}>
+            {generador.campos.map((campo) => (
+              <label key={campo.id}>
+                {campo.etiqueta}
+                <select value={opciones[campo.id]} onChange={cambiarOpcion(campo)}>
+                  {campo.valores.map((v) => (
+                    <option key={v.valor} value={v.valor}>{v.texto}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
             <button type="button" onClick={nuevaEscena}>
               <Dices className="icono" aria-hidden="true" />
               Nueva escena

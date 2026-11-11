@@ -218,6 +218,38 @@ Las pruebas de [`generador.test.js`](src/tests/generador.test.js) no comparan co
 
 El generador es código JavaScript de pocos KB y corre en el navegador, así que no agrega consumo de hosting. Además, `vercel.json` y `netlify.toml` marcan los archivos de `/assets` con **caché permanente**, porque llevan un código único en el nombre: cada navegador los descarga una sola vez.
 
+## Línea de calidad generada (CU-03)
+
+Segundo generador procedural, en **Análisis visual** → **CU-03 · Línea de calidad generada**. Lo arma [`generadorCalidad.js`](src/simulation/generadorCalidad.js).
+
+**Qué varía con cada semilla:**
+- **Línea:** posición y alto de la cinta, y dónde está el punto de inspección.
+- **Productos:** tamaño de cada uno y momento exacto en que llega (el ritmo varía ±25 % sin que choquen).
+- **Incidentes:** qué productos traen uno, como máximo uno por producto para que cada uno tenga una sola clasificación. Pueden ser:
+  - defecto mayor al 2 %, que da **no conforme** (RN-03.1);
+  - defecto de hasta el 2 %, que da **conforme con observación** (RN-03.2);
+  - sin etiqueta o con pieza faltante, que da **no conforme** (RN-03.3).
+
+**Opciones:**
+
+| Opción | Valores |
+| --- | --- |
+| Ritmo de llegada | Bajo (cada unos 8 s), medio (6 s) o alto (4,5 s) |
+| Velocidad de la cinta | Lenta, normal o rápida. Los rodillos dibujados giran a esa misma velocidad |
+| Riesgo de defectos | Bajo, medio o alto: probabilidad de cada incidente |
+
+**Pruebas** ([`generadorCalidad.test.js`](src/tests/generadorCalidad.test.js)):
+- **Validez:** en todas las combinaciones de ritmo y velocidad, las líneas son válidas y los productos nunca se superponen.
+- **Clasificación:** en 36 líneas, **cada producto pasa por el punto de inspección y recibe exactamente la clasificación que le corresponde** según sus atributos, ni más ni menos.
+- **Resumen:** el conteo del generador coincide con el resumen que se guarda en el historial (no conformes, con observación, productos).
+
+### Registro de generadores
+
+[`generadores.js`](src/simulation/generadores.js) reúne los generadores (almacén y calidad) con sus opciones:
+- **Pantalla de análisis:** arma sus botones y selectores desde ese registro.
+- **Evidencia y historial:** usan `guionDeSesion` para reconstruir exactamente la escena de cualquier sesión generada.
+- **Nuevos generadores:** basta con registrarlos ahí.
+
 ## Motor de escenas (fase 3)
 
 Para ver una escena: **Análisis visual** → elegir un caso → **Iniciar**.

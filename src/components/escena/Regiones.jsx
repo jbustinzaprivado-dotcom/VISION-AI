@@ -18,7 +18,7 @@ export function RegionDibujo({ region: r, px, py, t }) {
 
   return (
     <Group x={x} y={y}>
-      <Contenido clase={r.clase} w={w} h={h} color={color} t={t} cerrada={cerrada} />
+      <Contenido clase={r.clase} w={w} h={h} color={color} t={t} cerrada={cerrada} velocidad={r.atributos?.velocidad ?? 0.1} />
       <Rect width={w} height={h} stroke={color} strokeWidth={1} opacity={cerrada ? 0.35 : 0.7} dash={cerrada ? [6, 4] : undefined} />
       {/* El nombre va abajo a la izquierda: arriba quedan las etiquetas de detección y de las capas. */}
       <Rect x={3} y={h - 17} width={nombre.length * 6.1 + 8} height={14} fill="rgba(2,6,23,0.55)" cornerRadius={3} />
@@ -27,7 +27,7 @@ export function RegionDibujo({ region: r, px, py, t }) {
   );
 }
 
-function Contenido({ clase, w, h, color, t, cerrada }) {
+function Contenido({ clase, w, h, color, t, cerrada, velocidad }) {
   switch (clase) {
     case 'pasillo': {
       // Pasillo: piso más claro y línea de carril discontinua en el eje largo.
@@ -135,8 +135,9 @@ function Contenido({ clase, w, h, color, t, cerrada }) {
     case 'cinta': {
       // Cinta transportadora: rodillos que se desplazan con el tiempo de simulación.
       const paso = 14;
-      // Los productos avanzan 0,1 de la escena por segundo y la cinta ocupa todo el ancho: 0,1 × w px/s.
-      const avance = (t * 0.1 * w) % paso;
+      // Los productos avanzan `velocidad` (fracción de la escena) por segundo y la cinta ocupa
+      // todo el ancho: los rodillos se desplazan velocidad × w píxeles por segundo.
+      const avance = (t * velocidad * w) % paso;
       return (
         <Group clipX={0} clipY={0} clipWidth={w} clipHeight={h}>
           <Rect width={w} height={h} fill="#1f2937" />

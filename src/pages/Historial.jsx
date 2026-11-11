@@ -164,7 +164,7 @@ function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, expo
             <p>
               <strong>Sesión</strong> {s.id} ·{' '}
               {s.generado
-                ? `escena generada (generador v${s.generado.version}: ${s.generado.opciones.personas} personas, ${s.generado.opciones.montacargas} montacargas, riesgo ${s.generado.opciones.riesgo})`
+                ? `escena generada (generador v${s.generado.version}: ${Object.entries(s.generado.opciones).map(([k, v]) => `${k} ${v}`).join(', ')})`
                 : `guion v${s.versionGuion}`}{' '}
               · velocidad {String(s.velocidad).replace('.', ',')}× ·
               reglas: {s.reglas.map((x) => `${x.id} v${x.version}`).join(', ')}
