@@ -347,6 +347,21 @@ input[type='checkbox'], input[type='range'] { accent-color: var(--accion); }
 }
 .marca:hover:not(:disabled) { background: var(--accion); transform: scale(1.25); }
 
+.panel-opencv { background: var(--superficie); border: 1px solid color-mix(in srgb, #d946ef 40%, var(--borde)); border-radius: var(--radio); padding: 0.95rem; box-shadow: var(--sombra); }
+.panel-opencv h2 { font-size: 1rem; margin: 0 0 0.4rem; display: flex; align-items: center; gap: 0.45rem; color: #c026d3; }
+.metricas-cv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; margin-bottom: 0.4rem; }
+.metrica-cv { display: flex; flex-direction: column; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-sm); padding: 0.45rem 0.55rem; }
+.metrica-cv strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.tabla-cv { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.4rem 0; }
+.tabla-cv th, .tabla-cv td { text-align: left; padding: 0.3rem 0.25rem; border-top: 1px solid var(--borde); font-variant-numeric: tabular-nums; }
+.tabla-cv thead th { border-top: 0; color: var(--texto-suave); font-weight: 600; font-size: 0.75rem; }
+.tabla-cv .cambio { color: var(--rotulo); font-weight: 600; }
+.mascara-cv { margin: 0.4rem 0 0; }
+.mascara-cv canvas { width: 100%; height: auto; display: block; border-radius: var(--radio-sm); border: 1px solid var(--borde); image-rendering: pixelated; }
+.mascara-cv figcaption { font-size: 0.78rem; color: var(--texto-suave); margin-top: 0.2rem; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.girando { animation: girar 1s linear infinite; vertical-align: -2px; }
+
 .panel-resultados, .panel-alertas {
   background: var(--superficie);
   border: 1px solid var(--borde);

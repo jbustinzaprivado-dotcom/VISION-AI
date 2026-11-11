@@ -20,13 +20,14 @@ Las decisiones DT-1 a DT-6 están en el documento del proyecto (sección 14):
 - **DT-3:** todo en el navegador.
 - **DT-4:** el almacén es el caso principal.
 - **DT-5:** Konva y seedrandom.
-- **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO.
+- **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO. *Modificada por DT-8, ver abajo.*
 
 Se agrega:
 
 | # | Decisión | Motivo |
 | --- | --- | --- |
 | DT-7 | **Cámara simulada en lugar de cámara real.** El docente dio dos opciones: simular una cámara dentro del sistema, que analice los casos propuestos como animación, o usar una cámara real que analice lo que ocurre en la vida real en casos específicos. Se eligió la **cámara simulada** | Permite proponer libremente los casos de uso. Con una cámara real, salvo en un escenario ideal, los casos serían mayormente cotidianos: situaciones como un montacargas cerca de una persona en zona restringida, una salida de emergencia bloqueada o una fila de siete personas en caja ocurren pocas veces y no se pueden provocar a voluntad. La simulación además repite cada caso exactamente igual en las pruebas y en la presentación |
+| DT-8 | **OpenCV.js como capa de comparación (modifica DT-6).** Se agrega una capa opcional que analiza los **píxeles** de la cámara simulada con OpenCV y compara su estimación con la verdad geométrica. Las alertas siguen saliendo del análisis geométrico | Muestra visión por computadora real y su margen de error medido contra una verdad conocida, algo que solo permite la cámara simulada (DT-7). Corre en el navegador, se descarga solo al activar la capa y queda en caché, sin servidor ni costo de hosting. YOLO queda como fase posterior |
 
 En el sistema, la "cámara simulada" es el motor de escenas. Genera 12 cuadros por segundo de cada caso a partir de su guion, y cada cuadro pasa por el análisis y el motor de reglas, como lo haría la imagen de una cámara.
 
@@ -89,6 +90,7 @@ src/
   analysis/     regiones, ocupación, obstrucciones y cambios (fase 4)
   rules/        reglas de negocio y alertas (fase 6)
   training/     datos del entrenamiento ilustrativo (fase 5)
+  vision/       visión por píxeles con OpenCV.js (DT-8)
   data/         guardar y leer en el navegador (Dexie): sesiones, alertas, reglas
   tests/        pruebas automáticas
 ```
@@ -125,6 +127,47 @@ Funciones que leen el guion ([`trayectoria.js`](src/simulation/trayectoria.js)):
 - `posicionEn(objeto, t)` da dónde está la figura en el segundo `t`.
 - `atributosEn(elemento, t)` da sus atributos en ese momento.
 - `escenaEn(guion, t)` da la escena completa en ese instante.
+
+## Visión por píxeles con OpenCV (DT-8)
+
+En **Análisis visual**, la capa **OpenCV (píxeles)** analiza la imagen de la cámara simulada con visión por computadora clásica y compara su resultado con la verdad geométrica del mismo cuadro.
+
+### Cómo trabaja ([`vision/pixeles.js`](src/vision/pixeles.js))
+
+Una cámara limpia ([`vision/CapturaCamara.jsx`](src/vision/CapturaCamara.jsx)) dibuja en un lienzo oculto, a 480 × 270, solo lo que vería una cámara real: suelo, zonas y objetos, sin marcos de alerta ni etiquetas. En cada cuadro:
+
+1. **Diferencia absoluta** entre el cuadro y la imagen del lugar vacío en el mismo instante (sustracción de fondo).
+2. **Escala de grises y umbral:** los píxeles que cambiaron son "primer plano".
+3. **Apertura y cierre morfológicos:** quitan ruido y rellenan huecos.
+4. **Ocupación por región:** píxeles de primer plano ÷ píxeles de la región.
+5. **Contornos externos:** dan las cajas de los objetos encontrados.
+
+### Qué muestra
+
+- En el visor, las **cajas magenta** son lo que encontró OpenCV. Las cian, de la capa Detecciones, son la verdad.
+- El panel lateral muestra:
+  - objetos detectados frente a reales;
+  - **precisión**, **recall** e **IoU medio** ([`vision/metricas.js`](src/vision/metricas.js));
+  - el **error de ocupación** por región, el tiempo de proceso y el promedio de la sesión;
+  - la **máscara de primer plano**, es decir, lo que OpenCV considera objeto.
+
+Ejemplo real: en la tienda, a los 35 s, una persona que pasa delante de un estante se fusiona con él en una sola mancha. OpenCV detecta 10 de 11 objetos (recall 91 %, IoU 0,57). Es la limitación típica de la sustracción de fondo con objetos que se tocan, y por eso las alertas siguen saliendo de la geometría.
+
+### Carga y hosting
+
+- **OpenCV.js** (`@techstark/opencv-js`, WebAssembly) pesa unos **3,9 MB comprimidos**.
+- **Carga diferida:** solo se descarga al activar la capa, con una etiqueta `<script>`. Queda en `/assets` con caché permanente, así que cada navegador lo descarga una sola vez.
+- **Costo:** no usa servidor ni agrega costo de hosting.
+
+### Pruebas
+
+[`vision.test.js`](src/tests/vision.test.js) ejecuta el **OpenCV real** sobre imágenes sintéticas con objetos de posición conocida. Comprueba que:
+
+- sin cambios no se detecta nada;
+- cada objeto se encuentra con IoU mayor a 0,95;
+- la ocupación por región es exacta;
+- el ruido pequeño y los cambios de color leves se ignoran;
+- las métricas de comparación son correctas.
 
 ## Almacén generado (escenas procedurales)
 

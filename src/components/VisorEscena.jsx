@@ -24,6 +24,7 @@ export const CAPAS = [
   { id: 'cambios', etiqueta: 'Cambios' },
   { id: 'detecciones', etiqueta: 'Detecciones' },
   { id: 'trayectorias', etiqueta: 'Trayectorias' },
+  { id: 'opencv', etiqueta: 'OpenCV (píxeles)' },
   { id: 'figuras', etiqueta: 'Figuras' },
 ];
 const TRAZO_SEGUNDOS = 4;
@@ -43,7 +44,7 @@ function prefiereMenosMovimiento() {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-export default function VisorEscena({ escena, resultado, capas, alertas = [], guion = null }) {
+export default function VisorEscena({ escena, resultado, capas, alertas = [], guion = null, cajasOpenCV = [] }) {
   const contenedor = useRef(null);
   const [ancho, setAncho] = useState(800);
   const quieto = useMemo(prefiereMenosMovimiento, []);
@@ -194,6 +195,21 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [], gu
                 </Group>
               );
             })}
+          </Layer>
+        )}
+
+        {/* Cajas que encontró OpenCV analizando los píxeles (magenta, punteadas). */}
+        {ver('opencv') && cajasOpenCV.length > 0 && (
+          <Layer listening={false}>
+            {cajasOpenCV.map((c, i) => (
+              <Group key={i} x={px(c.x)} y={py(c.y)}>
+                <Rect width={px(c.w)} height={py(c.h)} stroke="#e879f9" strokeWidth={1.5} dash={[4, 3]} />
+                <Label y={py(c.h) + 1}>
+                  <Tag fill="#a21caf" opacity={0.9} cornerRadius={2} />
+                  <Text text="OpenCV" padding={2} fontSize={8} fill="#fdf4ff" />
+                </Label>
+              </Group>
+            ))}
           </Layer>
         )}
 

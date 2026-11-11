@@ -13,6 +13,10 @@ import { alertasActivas } from '../rules/motorReglas.js';
 import { useAvisos } from '../components/ui/Avisos.jsx';
 import { OPCIONES_INICIALES, RIESGOS, generarAlmacen } from '../simulation/generador.js';
 import { Dices, Shuffle } from 'lucide-react';
+import { useVisionPixeles } from '../vision/useVisionPixeles.js';
+import CapturaCamara from '../vision/CapturaCamara.jsx';
+import PanelOpenCV from '../components/PanelOpenCV.jsx';
+import { claveGuion } from '../data/useSesionAnalisis.js';
 
 // Identificador del modo "almacén generado" en el selector de casos.
 const GENERADO = 'GEN-02';
@@ -64,10 +68,18 @@ export default function Analisis() {
 
   // El análisis corre a frecuencia fija: solo cambia cuando cambia el número de cuadro.
   const analizar = useMemo(() => crearAnalizador(guion, semilla), [guion, semilla]);
-  const resultado = useMemo(
-    () => analizar(generarCuadro(guion, escena.indice, semilla)),
-    [analizar, guion, escena.indice, semilla],
-  );
+  const cuadro = useMemo(() => generarCuadro(guion, escena.indice, semilla), [guion, escena.indice, semilla]);
+  const resultado = useMemo(() => analizar(cuadro), [analizar, cuadro]);
+
+  // Capa OpenCV: visión por píxeles sobre la cámara limpia, comparada con la geometría.
+  const conOpenCV = capas.includes('opencv');
+  const visionCv = useVisionPixeles({
+    activo: conOpenCV,
+    claveEscena: `${claveGuion(guion)}|${semilla}`,
+    resultadoGeometrico: resultado,
+    avisar,
+  });
+  const nombresRegiones = useMemo(() => Object.fromEntries(guion.regiones.map((r) => [r.id, r.nombre])), [guion]);
 
   function elegirCaso(id) {
     setIdCaso(id);
@@ -161,7 +173,9 @@ export default function Analisis() {
 
       <div className="analisis-cuerpo">
         <div className="analisis-escena">
-          <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion} />
+          <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion}
+            cajasOpenCV={conOpenCV ? visionCv.vision?.pixeles.cajas ?? [] : []} />
+          {conOpenCV && visionCv.listo && <CapturaCamara cuadro={cuadro} onCaptura={visionCv.onCaptura} />}
           <Leyenda capas={capas} />
 
           {presentacion && (
@@ -179,6 +193,7 @@ export default function Analisis() {
         </div>
         <div className="analisis-lateral">
           {cargando ? <p className="nota">Cargando reglas…</p> : <PanelAlertas eventos={ocurridos} activas={activas} sesion={sesion} />}
+          {conOpenCV && <PanelOpenCV estado={visionCv.estado} error={visionCv.error} vision={visionCv.vision} nombres={nombresRegiones} />}
           <PanelResultados resultado={resultado} />
         </div>
       </div>
@@ -197,6 +212,7 @@ function Leyenda({ capas }) {
     ocupacion: 'Ocupación: de verde (vacía) a rojo (llena), con el porcentaje escrito.',
     calor: 'Mapa de calor: más intenso cuantas más personas hay en la región; se indica el número.',
     cambios: 'Cambios: borde punteado en las regiones cuya ocupación cambió respecto del inicio (más grueso desde 20 puntos).',
+    opencv: 'OpenCV (píxeles): cajas magenta = objetos que OpenCV encontró analizando solo la imagen; se comparan con la geometría real en el panel lateral.',
     detecciones: 'Detecciones: caja cian y clase de cada figura, como la marcaría un detector (calculada con la geometría, no con imágenes).',
     trayectorias: 'Trayectorias: recorrido de los últimos 4 segundos de cada figura que se mueve.',
     figuras: 'Personas: casco amarillo, chaleco naranja con franjas; translúcida = poco visible. Productos: etiqueta blanca, defecto rojo. Montacargas: baliza intermitente al moverse.',

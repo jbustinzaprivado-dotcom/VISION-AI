@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.1.0",
+    "@techstark/opencv-js": "^4.11.0-release.1",
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",
     "konva": "^9.3.16",
