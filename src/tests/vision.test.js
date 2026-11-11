@@ -65,6 +65,22 @@ describe('análisis por píxeles (OpenCV)', () => {
     expect(analizarPixeles(cv, { frame: conRuido, fondo }).cajas).toHaveLength(2);
   });
 
+  it('bajo contraste: un objeto de otro color pero brillo parecido se detecta completo', () => {
+    // Salida verde y carro gris azulado: diferencia por canal (40, 10, 40). Convertida a
+    // gris da unos 22, bajo el umbral (28): el método anterior no lo veía. El canal que más
+    // cambió da 40, sobre el umbral: el carro se detecta completo.
+    const salidaVerde = [22, 101, 52];
+    const carroGris = [62, 91, 92];
+    const grisDeLaDiferencia = 0.299 * 40 + 0.587 * 10 + 0.114 * 40;
+    expect(grisDeLaDiferencia).toBeLessThan(28);
+    const verde = imagen(salidaVerde);
+    const conCarro = imagen(salidaVerde, [objetos[0]], carroGris);
+    const region = [{ id: 'salida', ...norm({ x: 20, y: 20, w: 30, h: 20 }) }];
+    const r = analizarPixeles(cv, { frame: conCarro, fondo: verde, regiones: region });
+    expect(r.ocupacion.salida).toBeGreaterThan(0.95);
+    expect(r.cajas).toHaveLength(1);
+  });
+
   it('un cambio de color leve (bajo el umbral) no cuenta como objeto', () => {
     const casiIgual = imagen([40, 50, 60], objetos, [48, 58, 68]);
     expect(analizarPixeles(cv, { frame: casiIgual, fondo }).cajas).toEqual([]);

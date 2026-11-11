@@ -4,7 +4,10 @@
 //
 // Pasos (sustracción de fondo):
 //   1. Diferencia absoluta entre el cuadro actual y la imagen del lugar vacío.
-//   2. Escala de grises y umbral: los píxeles que cambiaron son "primer plano".
+//   2. Mayor diferencia entre los canales de color (rojo, verde, azul) y umbral: los
+//      píxeles que cambiaron son "primer plano". Se usa el canal que más cambió, y no la
+//      escala de grises, porque dos colores distintos con brillo parecido (un carro gris
+//      sobre una salida verde) casi no se diferencian en gris: bajo contraste.
 //   3. Apertura y cierre morfológicos: quitan ruido y rellenan huecos.
 //   4. Ocupación de cada región = píxeles de primer plano ÷ píxeles de la región.
 //   5. Contornos externos → cajas de los objetos detectados.
@@ -27,10 +30,17 @@ export function analizarPixeles(cv, { frame, fondo, regiones = [], parametros = 
     const vacio = nuevo(cv.matFromImageData(fondo));
     const diferencia = nuevo(new cv.Mat());
     cv.absdiff(actual, vacio, diferencia);
-    const gris = nuevo(new cv.Mat());
-    cv.cvtColor(diferencia, gris, cv.COLOR_RGBA2GRAY);
+    const canales = nuevo(new cv.MatVector());
+    cv.split(diferencia, canales);
+    const rojo = nuevo(canales.get(0));
+    const verde = nuevo(canales.get(1));
+    const azul = nuevo(canales.get(2));
+    nuevo(canales.get(3)); // alfa: no se usa (siempre opaco), pero hay que liberarlo
+    const cambio = nuevo(new cv.Mat());
+    cv.max(rojo, verde, cambio);
+    cv.max(cambio, azul, cambio);
     const mascara = nuevo(new cv.Mat());
-    cv.threshold(gris, mascara, p.umbral, 255, cv.THRESH_BINARY);
+    cv.threshold(cambio, mascara, p.umbral, 255, cv.THRESH_BINARY);
     const apertura = nuevo(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(p.nucleoApertura, p.nucleoApertura)));
     cv.morphologyEx(mascara, mascara, cv.MORPH_OPEN, apertura);
     const cierre = nuevo(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(p.nucleoCierre, p.nucleoCierre)));

@@ -137,7 +137,10 @@ En **Análisis visual**, la capa **OpenCV (píxeles)** analiza la imagen de la c
 Una cámara limpia ([`vision/CapturaCamara.jsx`](src/vision/CapturaCamara.jsx)) dibuja en un lienzo oculto, a 480 × 270, solo lo que vería una cámara real: suelo, zonas y objetos, sin marcos de alerta ni etiquetas. En cada cuadro:
 
 1. **Diferencia absoluta** entre el cuadro y la imagen del lugar vacío en el mismo instante (sustracción de fondo).
-2. **Escala de grises y umbral:** los píxeles que cambiaron son "primer plano".
+2. **Canal que más cambió y umbral:** de la diferencia en rojo, verde y azul se toma la mayor, y los píxeles que superan el umbral son "primer plano".
+   - **Por qué no escala de grises:** dos colores distintos con brillo parecido casi no se diferencian en gris. Es el problema del **bajo contraste**, por ejemplo un carro gris sobre la salida de emergencia verde.
+   - **Efecto de este cambio:** la ocupación medida de la salida pasó de 28 % a 59 % (real 75 %).
+   - **Lo que falta:** el resto es porque el carro dibujado no llena todo su rectángulo.
 3. **Apertura y cierre morfológicos:** quitan ruido y rellenan huecos.
 4. **Ocupación por región:** píxeles de primer plano ÷ píxeles de la región.
 5. **Contornos externos:** dan las cajas de los objetos encontrados.
@@ -151,7 +154,16 @@ Una cámara limpia ([`vision/CapturaCamara.jsx`](src/vision/CapturaCamara.jsx)) 
   - el **error de ocupación** por región, el tiempo de proceso y el promedio de la sesión;
   - la **máscara de primer plano**, es decir, lo que OpenCV considera objeto.
 
-Ejemplo real: en la tienda, a los 35 s, una persona que pasa delante de un estante se fusiona con él en una sola mancha. OpenCV detecta 10 de 11 objetos (recall 91 %, IoU 0,57). Es la limitación típica de la sustracción de fondo con objetos que se tocan, y por eso las alertas siguen saliendo de la geometría.
+Resultados reales (semilla 2026):
+
+| Caso | Detección | IoU medio | Error medio de ocupación |
+| --- | --- | --- | --- |
+| Almacén, 22 s | 6 de 6 | 0,91 | 1 punto |
+| Tienda, 35 s | 10 de 11 | 0,72 | 2 puntos |
+| Seguridad, 45 s | 4 de 4 | 0,75 | 4 puntos |
+| Calidad, 9 s | 1 de 1 | 0,95 | 1 punto |
+
+En la tienda, una persona que pasa delante de un estante se fusiona con él en una sola mancha. Es la limitación típica de la sustracción de fondo con objetos que se tocan, y por eso las alertas siguen saliendo de la geometría.
 
 ### Carga y hosting
 
@@ -166,6 +178,7 @@ Ejemplo real: en la tienda, a los 35 s, una persona que pasa delante de un estan
 - sin cambios no se detecta nada;
 - cada objeto se encuentra con IoU mayor a 0,95;
 - la ocupación por región es exacta;
+- un objeto de **otro color pero brillo parecido** (bajo contraste) se detecta completo;
 - el ruido pequeño y los cambios de color leves se ignoran;
 - las métricas de comparación son correctas.
 
