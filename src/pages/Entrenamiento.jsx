@@ -4,6 +4,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { CASOS } from '../simulation/casos.js';
 import { EPOCAS, ETAPAS, curvas, ejemplos, matrizConfusion, puntuaciones, validacion } from '../training/entrenamiento.js';
 import MiniEscena from '../components/MiniEscena.jsx';
+import SeccionYolo from '../components/SeccionYolo.jsx';
 
 // Animación ILUSTRATIVA de cómo se prepararía un modelo, en seis etapas.
 // Los datos salen de fórmulas fijas: no hay entrenamiento real.
@@ -132,6 +133,8 @@ export default function Entrenamiento() {
           Reiniciar
         </button>
       </div>
+
+      <SeccionYolo />
     </div>
   );
 }

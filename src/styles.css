@@ -581,3 +581,11 @@ a.kpi:hover { border-color: var(--accion); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Entrenamiento real con YOLO (DT-9) */
+.seccion-yolo { margin-top: 1.25rem; }
+.seccion-yolo h3 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+.seccion-yolo .metricas-cv { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.seccion-yolo .generador button { display: inline-flex; align-items: center; gap: 0.4rem; }
+.panel-yolo { background: var(--superficie); border: 1px solid color-mix(in srgb, #f59e0b 45%, var(--borde)); border-radius: var(--radio); padding: 0.95rem; box-shadow: var(--sombra); }
+.panel-yolo h2 { font-size: 1rem; margin: 0 0 0.4rem; display: flex; align-items: center; gap: 0.45rem; color: #b45309; }

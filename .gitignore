@@ -8,3 +8,10 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Entrenamiento de YOLO: dataset y corridas locales (se regeneran)
+entrenamiento/dataset.zip
+entrenamiento/dataset/
+entrenamiento/runs/
+entrenamiento/*.pt
+entrenamiento/entrenamiento.log

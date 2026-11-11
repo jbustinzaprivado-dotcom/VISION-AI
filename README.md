@@ -20,7 +20,7 @@ Las decisiones DT-1 a DT-6 están en el documento del proyecto (sección 14):
 - **DT-3:** todo en el navegador.
 - **DT-4:** el almacén es el caso principal.
 - **DT-5:** Konva y seedrandom.
-- **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO. *Modificada por DT-8, ver abajo.*
+- **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO. *Modificada por DT-8 y DT-9, ver abajo.*
 
 Se agrega:
 
@@ -28,6 +28,7 @@ Se agrega:
 | --- | --- | --- |
 | DT-7 | **Cámara simulada en lugar de cámara real.** El docente dio dos opciones: simular una cámara dentro del sistema, que analice los casos propuestos como animación, o usar una cámara real que analice lo que ocurre en la vida real en casos específicos. Se eligió la **cámara simulada** | Permite proponer libremente los casos de uso. Con una cámara real, salvo en un escenario ideal, los casos serían mayormente cotidianos: situaciones como un montacargas cerca de una persona en zona restringida, una salida de emergencia bloqueada o una fila de siete personas en caja ocurren pocas veces y no se pueden provocar a voluntad. La simulación además repite cada caso exactamente igual en las pruebas y en la presentación |
 | DT-8 | **OpenCV.js como capa de comparación (modifica DT-6).** Se agrega una capa opcional que analiza los **píxeles** de la cámara simulada con OpenCV y compara su estimación con la verdad geométrica. Las alertas siguen saliendo del análisis geométrico | Muestra visión por computadora real y su margen de error medido contra una verdad conocida, algo que solo permite la cámara simulada (DT-7). Corre en el navegador, se descarga solo al activar la capa y queda en caché, sin servidor ni costo de hosting. YOLO queda como fase posterior |
+| DT-9 | **YOLO entrenado con escenas generadas, como segunda capa de comparación (modifica DT-6).** Las escenas de los cuatro generadores se exportan como dataset (imágenes de la cámara limpia + etiquetas de la geometría exacta), se entrena YOLOv8n fuera de la aplicación (Colab, Kaggle o una computadora) y el modelo corre en el navegador con ONNX Runtime Web. Las alertas siguen saliendo del análisis geométrico | Es el paso de visión clásica (DT-8) a una red neuronal real, con su error medido contra una verdad conocida. Los generadores dan datos etiquetados ilimitados y sin costo. El entrenamiento no ocurre en el hosting; el modelo es un archivo estático que se descarga solo al activar la capa |
 
 En el sistema, la "cámara simulada" es el motor de escenas. Genera 12 cuadros por segundo de cada caso a partir de su guion, y cada cuadro pasa por el análisis y el motor de reglas, como lo haría la imagen de una cámara.
 
@@ -181,6 +182,53 @@ En la tienda, una persona que pasa delante de un estante se fusiona con él en u
 - un objeto de **otro color pero brillo parecido** (bajo contraste) se detecta completo;
 - el ruido pequeño y los cambios de color leves se ignoran;
 - las métricas de comparación son correctas.
+
+## Detector YOLO entrenado con escenas generadas (DT-9)
+
+Una red neuronal real (YOLOv8n) que aprende a reconocer los objetos de la simulación **mirando solo la imagen** de la cámara, entrenada con las escenas de los cuatro generadores.
+
+### 1. Dataset ([`vision/yolo/dataset.js`](src/vision/yolo/dataset.js))
+
+En **Entrenamiento → Entrenamiento real con YOLO → Generar dataset**:
+- **Escenas:** sesiones de cada generador con semillas y opciones al azar, más los cuatro casos fijos. De cada sesión se toman cuadros repartidos por los 60 s.
+- **Imágenes:** las dibuja la misma cámara limpia de OpenCV (480 × 270, JPG), sin marcos ni etiquetas.
+- **Etiquetas:** salen de la geometría exacta, en formato YOLO. Clases: persona, montacargas, carro, pallet, caja, producto y estante. Lo que entra o sale por el borde se recorta, y no se etiqueta si se ve menos del 40 %.
+- **Validación:** sesiones completas que no están en el entrenamiento, para evaluar con escenas que el modelo nunca vio.
+- **Archivo:** un .zip con `images/`, `labels/`, `data.yaml` y `LEEME.txt` ([`ExportadorDataset.jsx`](src/vision/yolo/ExportadorDataset.jsx), comprimido con fflate).
+
+### 2. Entrenamiento ([`entrenamiento/`](entrenamiento/))
+
+- [`entrenar_yolo.py`](entrenamiento/entrenar_yolo.py) ajusta YOLOv8n (preentrenado en COCO) con Ultralytics, evalúa con la validación y exporta `modelo.onnx` (entrada 288 × 480) y `resultados.json`.
+- [`entrenar_yolo.ipynb`](entrenamiento/entrenar_yolo.ipynb) hace lo mismo en Google Colab o Kaggle con GPU gratuita.
+- Los dos archivos van a [`src/vision/yolo/modelo/`](src/vision/yolo/modelo/). La pantalla Entrenamiento muestra las métricas reales (curva de mAP por época y resultado por clase).
+
+**Modelo publicado** ([`resultados.json`](src/vision/yolo/modelo/resultados.json)):
+- **Datos:** 2 100 imágenes, 1 700 de entrenamiento y 400 de validación, de 84 sesiones: 68 de entrenamiento y 16 de validación.
+- **Entrenamiento:** 15 épocas en CPU (Ryzen 5), con la base de la red congelada para que fuera más rápido. El modelo pesa 12 MB.
+- **Resultado en la validación**, es decir, con escenas que el modelo nunca vio:
+
+| mAP50 | mAP50-95 | Precisión | Recall |
+| --- | --- | --- | --- |
+| 98,8 % | 93,5 % | 99,6 % | 98,6 % |
+
+- **Clase más difícil: persona** (mAP50 94,5 %), por las figuras poco visibles (RN-01.3) y las que se superponen en las filas. El resto de las clases supera el 99 %.
+
+### 3. Inferencia en el navegador ([`vision/yolo/`](src/vision/yolo/))
+
+En **Análisis visual**, la capa **YOLO (red neuronal)**:
+1. Toma la imagen de la cámara limpia, la centra en 480 × 288 con relleno gris y la pasa a tensor ([`inferencia.js`](src/vision/yolo/inferencia.js)).
+2. La ejecuta con **ONNX Runtime Web** (WebAssembly) ([`modelo.js`](src/vision/yolo/modelo.js)).
+3. Decodifica la salida, descarta lo que no llega a 40 % de confianza y une cajas repetidas (NMS).
+4. Compara con la verdad del mismo cuadro: un acierto es misma clase con IoU ≥ 0,5 ([`useVisionYolo.js`](src/vision/yolo/useVisionYolo.js)).
+
+En el visor, las **cajas ámbar** llevan la clase y la confianza. El panel lateral muestra precisión, recall, clase correcta, tiempo de inferencia, el promedio de la sesión y una tabla por clase. Se puede activar junto con OpenCV para comparar las dos técnicas sobre la misma imagen.
+
+**Carga y hosting:** ONNX Runtime y el modelo se descargan solo al activar la capa, quedan en `/assets` con caché permanente y no usan servidor.
+
+**Pruebas** ([`yolo.test.js`](src/tests/yolo.test.js)):
+- **Dataset:** incluye todos los generadores y casos, la validación no comparte sesiones con el entrenamiento, es repetible y las etiquetas siempre quedan dentro de la imagen.
+- **Inferencia:** preparación de la entrada (relleno y canales), decodificación a coordenadas de la cámara, umbral y NMS.
+- **Modelo de punta a punta** ([`yoloModelo.test.js`](src/tests/yoloModelo.test.js)): cuatro imágenes reales de la validación, una por generador, pasan por los mismos pasos que en el navegador (ONNX Runtime incluido) y deben encontrar sus objetos con la clase correcta. Así se comprueba que la preparación y la decodificación en JavaScript coinciden con lo que aprendió el modelo en Python.
 
 ## Almacén generado (escenas procedurales)
 

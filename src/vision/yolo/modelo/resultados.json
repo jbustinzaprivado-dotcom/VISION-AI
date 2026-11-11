@@ -1,0 +1,212 @@
+{
+ "modelo": "YOLOv8n",
+ "capasCongeladas": 10,
+ "epocas": 15,
+ "imagenes": {
+  "train": 1700,
+  "val": 400
+ },
+ "equipo": "solo CPU",
+ "entrada": [
+  288,
+  480
+ ],
+ "clases_modelo": [
+  "persona",
+  "montacargas",
+  "carro",
+  "pallet",
+  "caja",
+  "producto",
+  "estante"
+ ],
+ "tamanoMB": 12.08,
+ "final": {
+  "mAP50": 0.9878,
+  "mAP50_95": 0.9352,
+  "precision": 0.9958,
+  "recall": 0.9862
+ },
+ "clases": [
+  {
+   "clase": "persona",
+   "instancias": 1208,
+   "mAP50": 0.9449,
+   "mAP50_95": 0.8883
+  },
+  {
+   "clase": "montacargas",
+   "instancias": 57,
+   "mAP50": 0.995,
+   "mAP50_95": 0.7952
+  },
+  {
+   "clase": "carro",
+   "instancias": 36,
+   "mAP50": 0.995,
+   "mAP50_95": 0.9698
+  },
+  {
+   "clase": "pallet",
+   "instancias": 150,
+   "mAP50": 0.995,
+   "mAP50_95": 0.9885
+  },
+  {
+   "clase": "caja",
+   "instancias": 425,
+   "mAP50": 0.9949,
+   "mAP50_95": 0.9243
+  },
+  {
+   "clase": "producto",
+   "instancias": 167,
+   "mAP50": 0.995,
+   "mAP50_95": 0.9927
+  },
+  {
+   "clase": "estante",
+   "instancias": 200,
+   "mAP50": 0.995,
+   "mAP50_95": 0.988
+  }
+ ],
+ "historial": [
+  {
+   "epoca": 1,
+   "mAP50": 0.9763,
+   "mAP50_95": 0.7713,
+   "precision": 0.9817,
+   "recall": 0.9657,
+   "perdidaCaja": 0.9427,
+   "perdidaClase": 1.6777
+  },
+  {
+   "epoca": 2,
+   "mAP50": 0.9842,
+   "mAP50_95": 0.847,
+   "precision": 0.9837,
+   "recall": 0.9484,
+   "perdidaCaja": 0.6462,
+   "perdidaClase": 0.5693
+  },
+  {
+   "epoca": 3,
+   "mAP50": 0.9875,
+   "mAP50_95": 0.8478,
+   "precision": 0.9923,
+   "recall": 0.9775,
+   "perdidaCaja": 0.6138,
+   "perdidaClase": 0.4872
+  },
+  {
+   "epoca": 4,
+   "mAP50": 0.9881,
+   "mAP50_95": 0.8552,
+   "precision": 0.9949,
+   "recall": 0.9822,
+   "perdidaCaja": 0.5775,
+   "perdidaClase": 0.445
+  },
+  {
+   "epoca": 5,
+   "mAP50": 0.9884,
+   "mAP50_95": 0.8831,
+   "precision": 0.997,
+   "recall": 0.9797,
+   "perdidaCaja": 0.5634,
+   "perdidaClase": 0.4269
+  },
+  {
+   "epoca": 6,
+   "mAP50": 0.9872,
+   "mAP50_95": 0.8953,
+   "precision": 0.9896,
+   "recall": 0.9847,
+   "perdidaCaja": 0.4814,
+   "perdidaClase": 0.3838
+  },
+  {
+   "epoca": 7,
+   "mAP50": 0.9877,
+   "mAP50_95": 0.8826,
+   "precision": 0.9948,
+   "recall": 0.9818,
+   "perdidaCaja": 0.463,
+   "perdidaClase": 0.3684
+  },
+  {
+   "epoca": 8,
+   "mAP50": 0.9885,
+   "mAP50_95": 0.898,
+   "precision": 0.9945,
+   "recall": 0.9819,
+   "perdidaCaja": 0.4422,
+   "perdidaClase": 0.3443
+  },
+  {
+   "epoca": 9,
+   "mAP50": 0.9886,
+   "mAP50_95": 0.9098,
+   "precision": 0.9936,
+   "recall": 0.986,
+   "perdidaCaja": 0.4294,
+   "perdidaClase": 0.3283
+  },
+  {
+   "epoca": 10,
+   "mAP50": 0.9887,
+   "mAP50_95": 0.907,
+   "precision": 0.9919,
+   "recall": 0.9866,
+   "perdidaCaja": 0.4105,
+   "perdidaClase": 0.3192
+  },
+  {
+   "epoca": 11,
+   "mAP50": 0.9878,
+   "mAP50_95": 0.9164,
+   "precision": 0.9955,
+   "recall": 0.9867,
+   "perdidaCaja": 0.4012,
+   "perdidaClase": 0.3102
+  },
+  {
+   "epoca": 12,
+   "mAP50": 0.9889,
+   "mAP50_95": 0.9229,
+   "precision": 0.9956,
+   "recall": 0.9871,
+   "perdidaCaja": 0.3909,
+   "perdidaClase": 0.3004
+  },
+  {
+   "epoca": 13,
+   "mAP50": 0.9878,
+   "mAP50_95": 0.9282,
+   "precision": 0.9946,
+   "recall": 0.9879,
+   "perdidaCaja": 0.3756,
+   "perdidaClase": 0.2908
+  },
+  {
+   "epoca": 14,
+   "mAP50": 0.9878,
+   "mAP50_95": 0.9311,
+   "precision": 0.9944,
+   "recall": 0.9869,
+   "perdidaCaja": 0.3625,
+   "perdidaClase": 0.2833
+  },
+  {
+   "epoca": 15,
+   "mAP50": 0.9878,
+   "mAP50_95": 0.9352,
+   "precision": 0.9958,
+   "recall": 0.9862,
+   "perdidaCaja": 0.3551,
+   "perdidaClase": 0.2759
+  }
+ ],
+ "fecha": "2026-11-11"
+}

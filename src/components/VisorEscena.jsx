@@ -25,6 +25,7 @@ export const CAPAS = [
   { id: 'detecciones', etiqueta: 'Detecciones' },
   { id: 'trayectorias', etiqueta: 'Trayectorias' },
   { id: 'opencv', etiqueta: 'OpenCV (píxeles)' },
+  { id: 'yolo', etiqueta: 'YOLO (red neuronal)' },
   { id: 'figuras', etiqueta: 'Figuras' },
 ];
 const TRAZO_SEGUNDOS = 4;
@@ -44,7 +45,7 @@ function prefiereMenosMovimiento() {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-export default function VisorEscena({ escena, resultado, capas, alertas = [], guion = null, cajasOpenCV = [] }) {
+export default function VisorEscena({ escena, resultado, capas, alertas = [], guion = null, cajasOpenCV = [], cajasYolo = [] }) {
   const contenedor = useRef(null);
   const [ancho, setAncho] = useState(800);
   const quieto = useMemo(prefiereMenosMovimiento, []);
@@ -52,7 +53,9 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [], gu
   useEffect(() => {
     const el = contenedor.current;
     if (!el) return undefined;
-    const medir = () => setAncho(el.clientWidth);
+    // Oculto (pestaña en segundo plano, panel cerrado) mide 0: se conserva el último
+    // ancho válido, porque Konva no puede dibujar patrones en un lienzo de tamaño 0.
+    const medir = () => el.clientWidth > 0 && setAncho(el.clientWidth);
     medir();
     const observador = new ResizeObserver(medir);
     observador.observe(el);
@@ -207,6 +210,22 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [], gu
                 <Label y={py(c.h) + 1}>
                   <Tag fill="#a21caf" opacity={0.9} cornerRadius={2} />
                   <Text text="OpenCV" padding={2} fontSize={8} fill="#fdf4ff" />
+                </Label>
+              </Group>
+            ))}
+          </Layer>
+        )}
+
+        {/* Objetos que detectó YOLO en la imagen (ámbar): clase y confianza. */}
+        {ver('yolo') && cajasYolo.length > 0 && (
+          <Layer listening={false}>
+            {cajasYolo.map((c, i) => (
+              <Group key={i} x={px(c.x)} y={py(c.y)}>
+                <Rect width={px(c.w)} height={py(c.h)} stroke="#fbbf24" strokeWidth={1.5} />
+                {/* Debajo de la caja: arriba va la etiqueta cian de Detecciones. */}
+                <Label y={py(c.h) + 1}>
+                  <Tag fill="#b45309" opacity={0.92} cornerRadius={2} />
+                  <Text text={`${c.nombre} ${Math.round(c.confianza * 100)}`} padding={2} fontSize={8} fill="#fffbeb" />
                 </Label>
               </Group>
             ))}

@@ -16,6 +16,8 @@ import { Dices, Shuffle } from 'lucide-react';
 import { useVisionPixeles } from '../vision/useVisionPixeles.js';
 import CapturaCamara from '../vision/CapturaCamara.jsx';
 import PanelOpenCV from '../components/PanelOpenCV.jsx';
+import { useVisionYolo } from '../vision/yolo/useVisionYolo.js';
+import PanelYolo from '../components/PanelYolo.jsx';
 import { claveGuion } from '../data/useSesionAnalisis.js';
 
 // Opciones iniciales de cada generador (almacén, línea de calidad...).
@@ -80,6 +82,14 @@ export default function Analisis() {
     resultadoGeometrico: resultado,
     avisar,
   });
+  // Capa YOLO (DT-9): detector entrenado con escenas generadas, sobre la misma cámara limpia.
+  const conYolo = capas.includes('yolo');
+  const visionYolo = useVisionYolo({ activo: conYolo, claveEscena: `${claveGuion(guion)}|${semilla}`, avisar });
+  const capturar = (conOpenCV && visionCv.listo) || (conYolo && visionYolo.listo);
+  const onCaptura = (captura) => {
+    if (conOpenCV) visionCv.onCaptura(captura);
+    if (conYolo) visionYolo.onCaptura(captura);
+  };
   const nombresRegiones = useMemo(() => Object.fromEntries(guion.regiones.map((r) => [r.id, r.nombre])), [guion]);
 
   function elegirCaso(id) {
@@ -169,8 +179,9 @@ export default function Analisis() {
       <div className="analisis-cuerpo">
         <div className="analisis-escena">
           <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion}
-            cajasOpenCV={conOpenCV ? visionCv.vision?.pixeles.cajas ?? [] : []} />
-          {conOpenCV && visionCv.listo && <CapturaCamara cuadro={cuadro} onCaptura={visionCv.onCaptura} />}
+            cajasOpenCV={conOpenCV ? visionCv.vision?.pixeles.cajas ?? [] : []}
+            cajasYolo={conYolo ? visionYolo.vision?.cajas ?? [] : []} />
+          {capturar && <CapturaCamara cuadro={cuadro} onCaptura={onCaptura} />}
           <Leyenda capas={capas} />
 
           {presentacion && (
@@ -188,6 +199,7 @@ export default function Analisis() {
         </div>
         <div className="analisis-lateral">
           {cargando ? <p className="nota">Cargando reglas…</p> : <PanelAlertas eventos={ocurridos} activas={activas} sesion={sesion} />}
+          {conYolo && <PanelYolo estado={visionYolo.estado} error={visionYolo.error} vision={visionYolo.vision} />}
           {conOpenCV && <PanelOpenCV estado={visionCv.estado} error={visionCv.error} vision={visionCv.vision} nombres={nombresRegiones} />}
           <PanelResultados resultado={resultado} />
         </div>
@@ -208,6 +220,7 @@ function Leyenda({ capas }) {
     calor: 'Mapa de calor: más intenso cuantas más personas hay en la región; se indica el número.',
     cambios: 'Cambios: borde punteado en las regiones cuya ocupación cambió respecto del inicio (más grueso desde 20 puntos).',
     opencv: 'OpenCV (píxeles): cajas magenta = objetos que OpenCV encontró analizando solo la imagen; se comparan con la geometría real en el panel lateral.',
+    yolo: 'YOLO: cajas ámbar con la clase y la confianza que estimó la red neuronal mirando solo la imagen; se comparan con la geometría real en el panel lateral.',
     detecciones: 'Detecciones: caja cian y clase de cada figura, como la marcaría un detector (calculada con la geometría, no con imágenes).',
     trayectorias: 'Trayectorias: recorrido de los últimos 4 segundos de cada figura que se mueve.',
     figuras: 'Personas: casco amarillo, chaleco naranja con franjas; translúcida = poco visible. Productos: etiqueta blanca, defecto rojo. Montacargas: baliza intermitente al moverse.',

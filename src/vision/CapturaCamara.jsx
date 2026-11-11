@@ -15,10 +15,6 @@ export const ALTO_CAPTURA = 270;
 export default function CapturaCamara({ cuadro, onCaptura }) {
   const escenario = useRef(null);
   const capaFondo = useRef(null);
-  const px = (v) => v * ANCHO_CAPTURA;
-  const py = (v) => v * ALTO_CAPTURA;
-  const regiones = cuadro.regiones.filter((r) => r.clase !== 'suelo');
-
   useEffect(() => {
     const stage = escenario.current;
     if (!stage) return;
@@ -33,18 +29,31 @@ export default function CapturaCamara({ cuadro, onCaptura }) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', visibility: 'hidden' }}>
       <Stage ref={escenario} width={ANCHO_CAPTURA} height={ALTO_CAPTURA} listening={false}>
-        <Layer ref={capaFondo}>
-          <Rect width={ANCHO_CAPTURA} height={ALTO_CAPTURA} fill="#1b2332" />
-          {regiones.map((r) => (
-            <RegionDibujo key={r.id} region={r} px={px} py={py} t={cuadro.t} />
-          ))}
-        </Layer>
-        <Layer>
-          {cuadro.objetos.map((o) => (
-            <FiguraDibujo key={o.id} figura={o} px={px} py={py} t={cuadro.t} />
-          ))}
-        </Layer>
+        <CapasLimpias cuadro={cuadro} refFondo={capaFondo} />
       </Stage>
     </div>
+  );
+}
+
+// Lo que ve la cámara limpia: suelo y zonas (capa de fondo) y los objetos encima.
+// También la usa el exportador del dataset de YOLO, así entrena con las mismas imágenes.
+export function CapasLimpias({ cuadro, refFondo }) {
+  const px = (v) => v * ANCHO_CAPTURA;
+  const py = (v) => v * ALTO_CAPTURA;
+  const regiones = cuadro.regiones.filter((r) => r.clase !== 'suelo');
+  return (
+    <>
+      <Layer ref={refFondo}>
+        <Rect width={ANCHO_CAPTURA} height={ALTO_CAPTURA} fill="#1b2332" />
+        {regiones.map((r) => (
+          <RegionDibujo key={r.id} region={r} px={px} py={py} t={cuadro.t} />
+        ))}
+      </Layer>
+      <Layer>
+        {cuadro.objetos.map((o) => (
+          <FiguraDibujo key={o.id} figura={o} px={px} py={py} t={cuadro.t} />
+        ))}
+      </Layer>
+    </>
   );
 }
