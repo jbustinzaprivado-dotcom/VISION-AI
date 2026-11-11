@@ -4,6 +4,13 @@
 
 const SEPARADOR = ';';
 
+// Fecha local AAAA-MM-DD para el nombre del archivo. No se usa toISOString(),
+// que da la fecha en UTC: en Perú, desde las 19:00 saldría el día siguiente.
+export function fechaLocal(fecha = new Date()) {
+  const dos = (n) => String(n).padStart(2, '0');
+  return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
+}
+
 function celda(valor) {
   if (valor == null) return '';
   const texto = String(valor);

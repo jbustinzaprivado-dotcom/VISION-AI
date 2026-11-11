@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../data/db.js';
 import { cambiarEstadoAlerta, cargarDatosEjemplo } from '../data/repositorio.js';
 import { calcularIndicadores } from '../data/indicadores.js';
-import { COLUMNAS_ALERTAS, COLUMNAS_SESIONES, aCSV } from '../data/csv.js';
+import { COLUMNAS_ALERTAS, COLUMNAS_SESIONES, aCSV, fechaLocal } from '../data/csv.js';
 import { USUARIOS_EJEMPLO, puede } from '../auth/roles.js';
 
 const usuario = (rol) => USUARIOS_EJEMPLO.find((u) => u.rol === rol);
@@ -89,6 +89,12 @@ describe('exportación CSV', () => {
   it('el reporte de alertas tiene una fila por alerta', async () => {
     const [, alertas] = await leer();
     expect(aCSV(alertas, COLUMNAS_ALERTAS, meta).split('\r\n')).toHaveLength(2 + alertas.length);
+  });
+
+  it('el nombre del archivo usa la fecha local, no la UTC', () => {
+    // 10 de noviembre a las 22:30 en hora local: el archivo debe decir 2026-11-10.
+    expect(fechaLocal(new Date(2026, 10, 10, 22, 30))).toBe('2026-11-10');
+    expect(fechaLocal(new Date(2026, 0, 5, 0, 15))).toBe('2026-01-05');
   });
 
   it('los textos con ";", comillas o saltos de línea se escapan', () => {

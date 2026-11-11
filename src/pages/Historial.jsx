@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db.js';
 import { ETIQUETAS_SESION } from '../data/estadosSesion.js';
-import { COLUMNAS_ALERTAS, COLUMNAS_SESIONES, aCSV, descargarCSV } from '../data/csv.js';
+import { COLUMNAS_ALERTAS, COLUMNAS_SESIONES, aCSV, descargarCSV, fechaLocal } from '../data/csv.js';
 import { useSesion } from '../auth/SesionContext.jsx';
 import { alcanceExportacion } from '../auth/roles.js';
 import { ORDEN_CASOS } from '../data/indicadores.js';
@@ -11,7 +11,7 @@ import { casoPorId } from '../simulation/casos.js';
 // Historial de sesiones con filtros, detalle y los tres reportes CSV:
 // resumen de una sesión, historial filtrado y reporte de alertas.
 const fecha = (iso) => new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
-const hoy = () => new Date().toISOString().slice(0, 10);
+const hoy = () => fechaLocal();
 
 export default function Historial() {
   const { usuario } = useSesion();
