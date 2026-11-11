@@ -12,6 +12,7 @@ import {
   reglasVigentes,
 } from '../data/repositorio.js';
 import { esFinal, puedeTransicionar } from '../data/estadosSesion.js';
+import { perteneceASesion } from '../data/useSesionAnalisis.js';
 import { procesarSesion } from '../rules/motorReglas.js';
 import { casoPorId } from '../simulation/casos.js';
 import { USUARIOS_EJEMPLO } from '../auth/roles.js';
@@ -29,6 +30,16 @@ async function sesionConAlertas() {
 beforeEach(async () => {
   await db.delete();
   await db.open();
+});
+
+describe('sesión de la pantalla de análisis', () => {
+  it('una sesión solo recibe eventos de su caso y su semilla (cambio de caso sin aviso RI-03)', () => {
+    const sesion = { id: 's1', caso: 'CU-04', semilla: 2026 };
+    expect(perteneceASesion(sesion, casoPorId('CU-04'), 2026)).toBe(true);
+    expect(perteneceASesion(sesion, casoPorId('CU-01'), 2026)).toBe(false); // se cambió de caso
+    expect(perteneceASesion(sesion, casoPorId('CU-04'), 7)).toBe(false); // se cambió la semilla
+    expect(perteneceASesion(null, casoPorId('CU-04'), 2026)).toBe(false);
+  });
 });
 
 describe('estados de la sesión', () => {

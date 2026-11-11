@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Circle, Group, Layer, Line, Rect, Stage, Text } from 'react-konva';
+import { Circle, Group, Label, Layer, Line, Rect, Stage, Tag, Text } from 'react-konva';
 import clases from '../simulation/clases.json';
 
 // Dibuja la escena con Konva, en capas que el usuario activa o apaga:
@@ -48,6 +48,22 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
   const medicion = Object.fromEntries((resultado?.mediciones ?? []).map((m) => [m.region, m]));
   const cambio = Object.fromEntries((resultado?.cambios ?? []).map((c) => [c.region, c]));
 
+  // Textos de las capas (ocupación, personas, cambios). Se dibujan en una capa encima
+  // de las figuras y con fondo blanco, para que las figuras no los tapen.
+  const etiquetas = [];
+  for (const r of regiones) {
+    const m = medicion[r.id];
+    let fila = 0;
+    const agregar = (texto, color) => {
+      etiquetas.push({ clave: `${r.id}-${fila}`, x: px(r.x) + 4, y: py(r.y) + 16 + fila * 18, texto, color });
+      fila += 1;
+    };
+    if (ver('ocupacion') && m) agregar(`Ocupación ${pct(m.ocupacion)}`, '#1e293b');
+    if (ver('calor') && m && m.personas > 0) agregar(`${m.personas} ${m.personas === 1 ? 'persona' : 'personas'}`, '#991b1b');
+    const c = cambio[r.id];
+    if (ver('cambios') && c) agregar(`${c.diferencia > 0 ? '+' : ''}${pct(c.diferencia)} vs. inicio`, '#92400e');
+  }
+
   return (
     <div className="visor" ref={contenedor}>
       <Stage width={ancho} height={alto}>
@@ -62,8 +78,8 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
               const m = medicion[r.id];
               if (!m) return null;
               return (
-                <Etiquetada key={r.id} r={r} px={px} py={py} fill={colorOcupacion(m.ocupacion)}
-                  opacity={0.15 + m.ocupacion * 0.5} texto={`Ocupación ${pct(m.ocupacion)}`} />
+                <Sombreado key={r.id} r={r} px={px} py={py} fill={colorOcupacion(m.ocupacion)}
+                  opacity={0.15 + m.ocupacion * 0.5} />
               );
             })}
           </Layer>
@@ -75,9 +91,8 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
               const m = medicion[r.id];
               if (!m || m.personas === 0) return null;
               return (
-                <Etiquetada key={r.id} r={r} px={px} py={py} fill="#dc2626" textoY={30}
-                  opacity={Math.min(0.65, 0.1 + m.personas * 0.08)}
-                  texto={`${m.personas} ${m.personas === 1 ? 'persona' : 'personas'}`} />
+                <Sombreado key={r.id} r={r} px={px} py={py} fill="#dc2626"
+                  opacity={Math.min(0.65, 0.1 + m.personas * 0.08)} />
               );
             })}
           </Layer>
@@ -89,11 +104,8 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
               const c = cambio[r.id];
               if (!c) return null;
               return (
-                <Group key={r.id} x={px(r.x)} y={py(r.y)}>
-                  <Rect width={px(r.w)} height={py(r.h)} stroke="#b45309" strokeWidth={c.diferencia >= 0.2 || c.diferencia <= -0.2 ? 4 : 2} dash={[8, 4]} />
-                  <Text text={`${c.diferencia > 0 ? '+' : ''}${pct(c.diferencia)} vs. inicio`} x={4} y={py(r.h) - 16}
-                    fontSize={12} fontStyle="bold" fill="#92400e" />
-                </Group>
+                <Rect key={r.id} x={px(r.x)} y={py(r.y)} width={px(r.w)} height={py(r.h)} stroke="#b45309"
+                  strokeWidth={c.diferencia >= 0.2 || c.diferencia <= -0.2 ? 4 : 2} dash={[8, 4]} />
               );
             })}
           </Layer>
@@ -103,6 +115,17 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
           <Layer listening={false}>
             {escena.objetos.map((o) => (
               <Figura key={o.id} figura={o} px={px} py={py} />
+            ))}
+          </Layer>
+        )}
+
+        {etiquetas.length > 0 && (
+          <Layer listening={false}>
+            {etiquetas.map((e) => (
+              <Label key={e.clave} x={e.x} y={e.y}>
+                <Tag fill="#ffffff" opacity={0.85} cornerRadius={3} />
+                <Text text={e.texto} padding={2} fontSize={12} fontStyle="bold" fill={e.color} />
+              </Label>
             ))}
           </Layer>
         )}
@@ -134,13 +157,8 @@ export default function VisorEscena({ escena, resultado, capas, alertas = [] }) 
   );
 }
 
-function Etiquetada({ r, px, py, fill, opacity, texto, textoY = 16 }) {
-  return (
-    <Group x={px(r.x)} y={py(r.y)}>
-      <Rect width={px(r.w)} height={py(r.h)} fill={fill} opacity={opacity} />
-      <Text text={texto} x={4} y={textoY} fontSize={12} fontStyle="bold" fill="#1e293b" />
-    </Group>
-  );
+function Sombreado({ r, px, py, fill, opacity }) {
+  return <Rect x={px(r.x)} y={py(r.y)} width={px(r.w)} height={py(r.h)} fill={fill} opacity={opacity} />;
 }
 
 function Region({ region: r, px, py }) {

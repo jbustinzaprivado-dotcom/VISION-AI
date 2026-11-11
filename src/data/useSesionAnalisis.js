@@ -4,6 +4,14 @@ import { procesarSesion } from '../rules/motorReglas.js';
 import { cambiarEstadoSesion, crearSesion, registrarEventos, reglasVigentes } from './repositorio.js';
 import { resumir } from './resumen.js';
 
+// Una sesión solo recibe eventos del caso y la semilla con que se creó.
+// Al cambiar de caso, React dibuja una vez con el caso nuevo antes de soltar la
+// sesión anterior; sin esta comprobación, los eventos del caso nuevo irían a la
+// sesión vieja (RI-03 lo rechazaba y aparecía un aviso de error).
+export function perteneceASesion(sesion, guion, semilla) {
+  return Boolean(sesion) && sesion.caso === guion.caso && sesion.semilla === semilla;
+}
+
 // Une la escena con la sesión guardada:
 //  - Iniciar crea la sesión una sola vez (pulsar dos veces no crea dos).
 //  - A medida que avanza el reloj se guardan las alertas y eventos ya ocurridos.
@@ -13,7 +21,7 @@ import { resumir } from './resumen.js';
 // y se muestran los que tienen t ≤ instante actual.
 export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario }) {
   const reglasActuales = useLiveQuery(reglasVigentes, []);
-  const [sesion, setSesion] = useState(null); // { id, reglas }
+  const [sesion, setSesion] = useState(null); // { id, caso, semilla, reglas, terminada }
   const creando = useRef(false);
   const guardados = useRef(0);
   const cola = useRef(Promise.resolve());
@@ -26,7 +34,8 @@ export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario })
   };
 
   // Con sesión, se usan las reglas con las que empezó (RN-G4); sin sesión, las vigentes.
-  const reglas = sesion?.reglas ?? reglasActuales;
+  const propia = perteneceASesion(sesion, guion, semilla) ? sesion : null;
+  const reglas = propia?.reglas ?? reglasActuales;
   const eventos = useMemo(() => (reglas ? procesarSesion(guion, semilla, reglas) : []), [guion, semilla, reglas]);
 
   // Cancelar la sesión abierta al cambiar de caso o semilla, o al salir de la pantalla.
@@ -44,7 +53,7 @@ export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario })
 
   // Guardar los eventos que ya ocurrieron y cerrar la sesión al final del guion.
   useEffect(() => {
-    if (!sesion || sesion.terminada) return;
+    if (!perteneceASesion(sesion, guion, semilla) || sesion.terminada) return;
     const nuevos = [];
     while (guardados.current < eventos.length && eventos[guardados.current].t <= reloj.t) {
       nuevos.push(eventos[guardados.current]);
@@ -56,40 +65,41 @@ export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario })
       setSesion((s) => ({ ...s, terminada: true }));
       encolar(() => cambiarEstadoSesion(id, 'completada', resumir(guion, eventos)));
     }
-  }, [sesion, eventos, reloj.t, reloj.terminado, guion]);
+  }, [sesion, eventos, reloj.t, reloj.terminado, guion, semilla]);
 
   const acciones = {
     async iniciar() {
       if (!reglas) return;
-      if (!sesion) {
+      if (!propia) {
         if (creando.current) return; // PF-02: doble clic, una sola sesión
         creando.current = true;
         try {
           const nueva = await crearSesion({ guion, semilla, velocidad: reloj.velocidad, usuario, reglas });
           guardados.current = 0;
-          setSesion({ id: nueva.id, reglas, terminada: false });
+          setError(null);
+          setSesion({ id: nueva.id, caso: guion.caso, semilla, reglas, terminada: false });
         } catch (e) {
           setError(e.message);
           return;
         } finally {
           creando.current = false;
         }
-      } else if (!sesion.terminada) {
-        const id = sesion.id;
+      } else if (!propia.terminada) {
+        const id = propia.id;
         encolar(() => cambiarEstadoSesion(id, 'en_ejecucion'));
       }
       controles.iniciar();
     },
     pausar() {
       controles.pausar();
-      if (sesion && !sesion.terminada) {
-        const id = sesion.id;
+      if (propia && !propia.terminada) {
+        const id = propia.id;
         encolar(() => cambiarEstadoSesion(id, 'pausada'));
       }
     },
     reiniciar() {
-      if (sesion && !sesion.terminada) {
-        const id = sesion.id;
+      if (propia && !propia.terminada) {
+        const id = propia.id;
         encolar(() => cambiarEstadoSesion(id, 'cancelada'));
       }
       setSesion(null);
@@ -98,5 +108,5 @@ export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario })
     },
   };
 
-  return { eventos, sesion, acciones, error, cargando: !reglas };
+  return { eventos, sesion: propia, acciones, error, cargando: !reglas };
 }
