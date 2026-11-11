@@ -126,6 +126,42 @@ Funciones que leen el guion ([`trayectoria.js`](src/simulation/trayectoria.js)):
 - `atributosEn(elemento, t)` da sus atributos en ese momento.
 - `escenaEn(guion, t)` da la escena completa en ese instante.
 
+## Almacén generado (escenas procedurales)
+
+Además de los cuatro guiones fijos, el almacén (CU-02) puede **generarse**: en **Análisis visual** → **CU-02 · Almacén generado**. Cada semilla produce un almacén y una historia distintos, y la misma semilla con las mismas opciones produce siempre la misma escena.
+
+[`generador.js`](src/simulation/generador.js) arma un guion con el mismo formato que los JSON, así que el motor, el análisis y las reglas lo procesan sin cambios. Sortea:
+
+- **Distribución:** 2 o 3 filas de estanterías con sus pasillos, y la zona restringida arriba o abajo de la zona de tránsito.
+- **Mercadería:** cajas y pallets en los pasillos, sin saturarlos.
+- **Actores:** de 1 a 6 personas que recorren los pasillos, y 1 o 2 montacargas.
+- **Incidentes, según el riesgo elegido (bajo, medio o alto):**
+  - una persona que entra a la zona restringida, a veces con el montacargas maniobrando cerca;
+  - un pallet que obstruye la zona de tránsito durante un tiempo variable.
+
+**Nueva escena** sortea otra semilla. La línea de tiempo y los subtítulos se generan con los incidentes de cada escena.
+
+### Cómo se garantiza que funciona en cualquier escena
+
+Las pruebas de [`generador.test.js`](src/tests/generador.test.js) no comparan con segundos fijos, sino que comprueban **propiedades** en decenas de escenas por nivel de riesgo:
+
+- **Validez:** todas las escenas son válidas (formato, coordenadas entre 0 y 1, tiempos).
+- **Permanencia en zona restringida:** cada permanencia de más de 3 s produce exactamente una alerta (RN-02.1 o RN-02.2), y las más cortas ninguna.
+- **Obstrucción:** cada obstrucción de 5 s o más produce su alerta RN-02.3.
+- **Riesgo alto:** siempre hay incidentes, y la regla de proximidad aparece en la mayoría de las escenas.
+- **Rendimiento:** cada escena se analiza completa en menos de medio segundo.
+
+### Sesiones de escenas generadas
+
+- **Qué se guarda:** la sesión guarda la semilla y las opciones (`generado`) para poder **reconstruir exactamente** la escena (RI-05).
+- **Evidencia:** la evidencia de una alerta en Alertas vuelve a generar la escena y muestra el cuadro exacto.
+- **Historial y CSV:** el detalle del historial y el CSV indican "escena generada" con sus opciones.
+- **Sin mezclas:** el almacén fijo y el generado son ambos CU-02, pero cada sesión se identifica también por su modo y sus opciones.
+
+### Uso del plan gratuito
+
+El generador es código JavaScript de pocos KB y corre en el navegador, así que no agrega consumo de hosting. Además, `vercel.json` y `netlify.toml` marcan los archivos de `/assets` con **caché permanente**, porque llevan un código único en el nombre: cada navegador los descarga una sola vez.
+
 ## Motor de escenas (fase 3)
 
 Para ver una escena: **Análisis visual** → elegir un caso → **Iniciar**.

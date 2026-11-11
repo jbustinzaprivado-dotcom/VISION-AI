@@ -9,7 +9,13 @@ import { resumir } from './resumen.js';
 // sesión anterior; sin esta comprobación, los eventos del caso nuevo irían a la
 // sesión vieja (RI-03 lo rechazaba y aparecía un aviso de error).
 export function perteneceASesion(sesion, guion, semilla) {
-  return Boolean(sesion) && sesion.caso === guion.caso && sesion.semilla === semilla;
+  return Boolean(sesion) && sesion.clave === claveGuion(guion) && sesion.semilla === semilla;
+}
+
+// Identifica la escena: el caso y, si es generada, también sus opciones
+// (el almacén fijo y el generado son ambos CU-02 y no deben mezclarse).
+export function claveGuion(guion) {
+  return guion.generado ? `${guion.caso}|generado|${JSON.stringify(guion.generado.opciones)}` : guion.caso;
 }
 
 // Une la escena con la sesión guardada:
@@ -77,7 +83,7 @@ export function useSesionAnalisis({ guion, semilla, reloj, controles, usuario })
           const nueva = await crearSesion({ guion, semilla, velocidad: reloj.velocidad, usuario, reglas });
           guardados.current = 0;
           setError(null);
-          setSesion({ id: nueva.id, caso: guion.caso, semilla, reglas, terminada: false });
+          setSesion({ id: nueva.id, clave: claveGuion(guion), semilla, reglas, terminada: false });
         } catch (e) {
           setError(e.message);
           return;

@@ -52,13 +52,13 @@ export default function ControlesSimulacion({ reloj, eventos, controles }) {
           onChange={(e) => controles.saltarA(Number(e.target.value))}
         />
         <div className="marcas">
-          {eventos.map((ev) => (
+          {eventos.map((ev, i) => (
             <button
-              key={ev.t}
+              key={`${ev.t}-${i}`}
               type="button"
               className="marca"
               style={{ left: `${(ev.t / duracion) * 100}%` }}
-              title={`${ev.t} s: ${ev.texto}`}
+              title={`${String(ev.t).replace('.', ',')} s: ${ev.texto}`}
               aria-label={`Ir al segundo ${ev.t}`}
               onClick={() => controles.saltarA(ev.t)}
             />

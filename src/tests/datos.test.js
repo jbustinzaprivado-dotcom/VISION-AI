@@ -12,7 +12,8 @@ import {
   reglasVigentes,
 } from '../data/repositorio.js';
 import { esFinal, puedeTransicionar } from '../data/estadosSesion.js';
-import { perteneceASesion } from '../data/useSesionAnalisis.js';
+import { claveGuion, perteneceASesion } from '../data/useSesionAnalisis.js';
+import { generarAlmacen } from '../simulation/generador.js';
 import { procesarSesion } from '../rules/motorReglas.js';
 import { casoPorId } from '../simulation/casos.js';
 import { USUARIOS_EJEMPLO } from '../auth/roles.js';
@@ -34,11 +35,27 @@ beforeEach(async () => {
 
 describe('sesión de la pantalla de análisis', () => {
   it('una sesión solo recibe eventos de su caso y su semilla (cambio de caso sin aviso RI-03)', () => {
-    const sesion = { id: 's1', caso: 'CU-04', semilla: 2026 };
+    const sesion = { id: 's1', clave: claveGuion(casoPorId('CU-04')), semilla: 2026 };
     expect(perteneceASesion(sesion, casoPorId('CU-04'), 2026)).toBe(true);
     expect(perteneceASesion(sesion, casoPorId('CU-01'), 2026)).toBe(false); // se cambió de caso
     expect(perteneceASesion(sesion, casoPorId('CU-04'), 7)).toBe(false); // se cambió la semilla
     expect(perteneceASesion(null, casoPorId('CU-04'), 2026)).toBe(false);
+  });
+
+  it('el almacén fijo y el generado (ambos CU-02) no comparten sesión; cambiar las opciones tampoco', () => {
+    const fija = { id: 's2', clave: claveGuion(casoPorId('CU-02')), semilla: 2026 };
+    expect(perteneceASesion(fija, generarAlmacen(2026), 2026)).toBe(false);
+    const generada = { id: 's3', clave: claveGuion(generarAlmacen(2026, { personas: 3 })), semilla: 2026 };
+    expect(perteneceASesion(generada, generarAlmacen(2026, { personas: 3 }), 2026)).toBe(true);
+    expect(perteneceASesion(generada, generarAlmacen(2026, { personas: 4 }), 2026)).toBe(false);
+  });
+
+  it('una sesión de escena generada guarda sus opciones para reconstruirla', async () => {
+    const g = generarAlmacen(77, { personas: 2, riesgo: 'alto' });
+    const s = await crearSesion({ guion: g, semilla: 77, velocidad: 1, usuario: usuario('operador'), reglas: await reglasVigentes() });
+    const guardada = await db.sesiones.get(s.id);
+    expect(guardada.generado).toEqual({ version: 1, opciones: { personas: 2, montacargas: 1, riesgo: 'alto' } });
+    expect(generarAlmacen(guardada.semilla, guardada.generado.opciones)).toEqual(g);
   });
 });
 

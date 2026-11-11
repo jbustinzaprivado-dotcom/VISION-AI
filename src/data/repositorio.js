@@ -74,6 +74,8 @@ export async function crearSesion({ guion, semilla, velocidad, usuario, reglas }
     semilla,
     velocidad,
     versionGuion: guion.version,
+    // Escena generada: con la semilla y estas opciones se reconstruye exactamente (RI-05).
+    generado: guion.generado ? { version: guion.generado.version, opciones: guion.generado.opciones } : null,
     reglas: reglas.filter((r) => r.caso === guion.caso).map((r) => ({ id: r.id, version: r.version })),
     usuario: { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol },
     origen: 'prototipo',

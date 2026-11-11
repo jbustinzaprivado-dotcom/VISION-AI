@@ -11,13 +11,24 @@ import { useSesion } from '../auth/SesionContext.jsx';
 import { useSesionAnalisis } from '../data/useSesionAnalisis.js';
 import { alertasActivas } from '../rules/motorReglas.js';
 import { useAvisos } from '../components/ui/Avisos.jsx';
+import { OPCIONES_INICIALES, RIESGOS, generarAlmacen } from '../simulation/generador.js';
+import { Dices, Shuffle } from 'lucide-react';
+
+// Identificador del modo "almacén generado" en el selector de casos.
+const GENERADO = 'GEN-02';
 
 // Análisis visual: elegir caso → ver la escena simulada → controlarla.
 // El análisis de regiones (fase 4) y las alertas (fase 6) se agregan sobre esta pantalla.
 export default function Analisis() {
   const [idCaso, setIdCaso] = useState(CASOS[0].caso);
-  const guion = CASOS.find((c) => c.caso === idCaso);
-  const [semilla, setSemilla] = useState(guion.semilla);
+  const [semilla, setSemilla] = useState(CASOS[0].semilla);
+  const [opciones, setOpciones] = useState(OPCIONES_INICIALES);
+  const generado = idCaso === GENERADO;
+  // Guion fijo del caso, o uno generado a partir de la semilla y las opciones.
+  const guion = useMemo(
+    () => (generado ? generarAlmacen(semilla, opciones) : CASOS.find((c) => c.caso === idCaso)),
+    [generado, idCaso, semilla, opciones],
+  );
   const [presentacion, setPresentacion] = useState(true);
   const [capas, setCapas] = useState(['regiones', 'detecciones', 'figuras']);
   const { reloj, escena, controles, fps } = useSimulacion(guion, semilla);
@@ -60,8 +71,10 @@ export default function Analisis() {
 
   function elegirCaso(id) {
     setIdCaso(id);
-    setSemilla(CASOS.find((c) => c.caso === id).semilla);
+    setSemilla(id === GENERADO ? semilla : CASOS.find((c) => c.caso === id).semilla);
   }
+  const cambiarOpcion = (campo) => (e) => setOpciones((o) => ({ ...o, [campo]: campo === 'riesgo' ? e.target.value : Number(e.target.value) }));
+  const nuevaEscena = () => setSemilla(Math.floor(Math.random() * 1_000_000));
 
   return (
     <div className="analisis">
@@ -79,7 +92,49 @@ export default function Analisis() {
               {c.caso} · {c.nombre}
             </button>
           ))}
+          <button
+            type="button"
+            className={generado ? '' : 'secundario'}
+            aria-pressed={generado}
+            onClick={() => elegirCaso(GENERADO)}
+            title="Escena del almacén creada a partir de la semilla: cada semilla es un almacén y una historia distintos"
+          >
+            <Shuffle className="icono" aria-hidden="true" />
+            CU-02 · Almacén generado
+          </button>
         </div>
+        {generado && (
+          <div className="generador" role="group" aria-label="Opciones del almacén generado">
+            <label>
+              Personas
+              <select value={opciones.personas} onChange={cambiarOpcion('personas')}>
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Montacargas
+              <select value={opciones.montacargas} onChange={cambiarOpcion('montacargas')}>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+              </select>
+            </label>
+            <label>
+              Riesgo de incidentes
+              <select value={opciones.riesgo} onChange={cambiarOpcion('riesgo')}>
+                {Object.entries(RIESGOS).map(([id, r]) => (
+                  <option key={id} value={id}>{r.nombre}</option>
+                ))}
+              </select>
+            </label>
+            <button type="button" onClick={nuevaEscena}>
+              <Dices className="icono" aria-hidden="true" />
+              Nueva escena
+            </button>
+            <p className="nota">{guion.esperado.resumen} Misma semilla y opciones: misma escena.</p>
+          </div>
+        )}
         <div className="opciones">
           <label>
             Semilla{' '}
@@ -111,7 +166,7 @@ export default function Analisis() {
 
           {presentacion && (
             <p className="subtitulo" aria-live="polite">
-              {evento ? `${evento.t} s · ${evento.texto}` : 'Pulsa Iniciar para reproducir la escena.'}
+              {evento ? `${String(evento.t).replace('.', ',')} s · ${evento.texto}` : 'Pulsa Iniciar para reproducir la escena.'}
             </p>
           )}
 

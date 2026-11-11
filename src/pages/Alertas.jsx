@@ -6,6 +6,7 @@ import { useSesion } from '../auth/SesionContext.jsx';
 import { esSoloLectura } from '../auth/roles.js';
 import { siguienteEstado } from '../rules/alertas.js';
 import { casoPorId } from '../simulation/casos.js';
+import { guionDeSesion } from '../simulation/generador.js';
 import { generarCuadro } from '../simulation/motor.js';
 import MiniEscena from '../components/MiniEscena.jsx';
 import { ETIQUETA_SEVERIDAD } from '../components/PanelAlertas.jsx';
@@ -23,7 +24,7 @@ export default function Alertas() {
   const sesiones = useLiveQuery(() => db.sesiones.toArray(), []);
   const [filtros, setFiltros] = useState({ estado: 'pendientes', caso: 'todos', severidad: 'todas' });
 
-  const semillaDe = useMemo(() => Object.fromEntries((sesiones ?? []).map((s) => [s.id, s.semilla])), [sesiones]);
+  const sesionDe = useMemo(() => Object.fromEntries((sesiones ?? []).map((s) => [s.id, s])), [sesiones]);
   const visibles = (alertas ?? []).filter(
     (a) =>
       (filtros.estado === 'todas' ||
@@ -79,7 +80,7 @@ export default function Alertas() {
       ) : (
         <ul className="tarjetas-alertas">
           {visibles.map((a) => (
-            <TarjetaAlerta key={a.id} alerta={a} semilla={semillaDe[a.sesion]} usuario={usuario} puede={puede} />
+            <TarjetaAlerta key={a.id} alerta={a} sesion={sesionDe[a.sesion]} usuario={usuario} puede={puede} />
           ))}
         </ul>
       )}
@@ -87,7 +88,7 @@ export default function Alertas() {
   );
 }
 
-function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
+function TarjetaAlerta({ alerta: a, sesion, usuario, puede }) {
   const [verEvidencia, setVerEvidencia] = useState(false);
   const [observacion, setObservacion] = useState('');
   const [error, setError] = useState(null);
@@ -141,7 +142,7 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
       </div>
       <p className="mensaje">{a.mensaje}</p>
       <p className="detalle">
-        {a.caso} · {casoPorId(a.caso)?.nombre} · segundo {a.t.toFixed(1).replace('.', ',')} · cuadro {a.cuadro} · {a.objetivo} ·
+        {a.caso} · {sesion?.nombreCaso ?? casoPorId(a.caso)?.nombre} · segundo {a.t.toFixed(1).replace('.', ',')} · cuadro {a.cuadro} · {a.objetivo} ·
         situación {a.situacion === 'activa' ? 'activa' : 'terminada'} · regla v{a.versionRegla} · sesión {a.sesion.slice(0, 8)}
       </p>
       {a.revisadaPor && <p className="detalle">Revisada por {a.revisadaPor.nombre} ({fecha(a.revisadaPor.en)})</p>}
@@ -155,7 +156,7 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
         {verEvidencia ? <EyeOff className="icono" aria-hidden="true" /> : <Eye className="icono" aria-hidden="true" />}
         {verEvidencia ? 'Ocultar evidencia' : 'Ver evidencia'}
       </button>
-      {verEvidencia && semilla != null && <Evidencia alerta={a} semilla={semilla} />}
+      {verEvidencia && sesion && <Evidencia alerta={a} sesion={sesion} />}
 
       {siguiente && permitido && (
         <div className="accion-alerta">
@@ -189,8 +190,10 @@ function TarjetaAlerta({ alerta: a, semilla, usuario, puede }) {
 }
 
 // Reconstruye el cuadro exacto de la alerta (misma semilla, mismo cuadro) y resalta el objetivo.
-function Evidencia({ alerta, semilla }) {
-  const guion = casoPorId(alerta.caso);
+// En una escena generada, el guion se vuelve a generar con la semilla y las opciones de la sesión.
+function Evidencia({ alerta, sesion }) {
+  const semilla = sesion.semilla;
+  const guion = guionDeSesion(sesion, casoPorId);
   const cuadro = generarCuadro(guion, alerta.cuadro, semilla);
   let zona = null;
   if (alerta.tipoObjetivo === 'region') zona = cuadro.regiones.find((r) => r.id === alerta.objetivo) ?? null;

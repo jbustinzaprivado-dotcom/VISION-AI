@@ -162,7 +162,11 @@ function FilaSesion({ sesion: s, alertas, abierta, alternar, puedeExportar, expo
         <tr className="detalle-sesion">
           <td colSpan={7}>
             <p>
-              <strong>Sesión</strong> {s.id} · guion v{s.versionGuion} · velocidad {String(s.velocidad).replace('.', ',')}× ·
+              <strong>Sesión</strong> {s.id} ·{' '}
+              {s.generado
+                ? `escena generada (generador v${s.generado.version}: ${s.generado.opciones.personas} personas, ${s.generado.opciones.montacargas} montacargas, riesgo ${s.generado.opciones.riesgo})`
+                : `guion v${s.versionGuion}`}{' '}
+              · velocidad {String(s.velocidad).replace('.', ',')}× ·
               reglas: {s.reglas.map((x) => `${x.id} v${x.version}`).join(', ')}
             </p>
             <p>

@@ -275,6 +275,9 @@ input[type='checkbox'], input[type='range'] { accent-color: var(--accion); }
 .analisis-lateral { display: flex; flex-direction: column; gap: 0.85rem; min-width: 0; }
 @media (max-width: 1100px) { .analisis-cuerpo { grid-template-columns: minmax(0, 1fr); } }
 
+.generador { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: flex-end; padding: 0.75rem 0.9rem; background: var(--accion-suave); border: 1px solid color-mix(in srgb, var(--accion) 35%, var(--borde)); border-radius: var(--radio); }
+.generador label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8rem; color: var(--texto-suave); }
+.generador .nota { flex-basis: 100%; margin: 0; }
 .capas { display: flex; flex-wrap: wrap; gap: 0.35rem; border: 0; padding: 0; margin: 0; }
 .capas legend { font-size: 0.8rem; color: var(--texto-suave); margin-bottom: 0.35rem; padding: 0; }
 .capas label {
