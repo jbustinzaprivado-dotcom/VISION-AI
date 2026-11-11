@@ -1,0 +1,117 @@
+{
+  "caso": "CU-04",
+  "nombre": "Flujo y ocupación en tienda",
+  "prioridad": 2,
+  "version": 1,
+  "duracion": 60,
+  "semilla": 2026,
+  "regiones": [
+    { "id": "suelo-1", "clase": "suelo", "nombre": "Suelo", "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "id": "entrada-1", "clase": "entrada", "nombre": "Línea de entrada", "x": 0.02, "y": 0.4, "w": 0.04, "h": 0.24 },
+    { "id": "pasillo-1", "clase": "pasillo", "nombre": "Pasillo norte", "x": 0.12, "y": 0.08, "w": 0.48, "h": 0.38 },
+    { "id": "pasillo-2", "clase": "pasillo", "nombre": "Pasillo sur", "x": 0.12, "y": 0.54, "w": 0.48, "h": 0.38 },
+    { "id": "caja-1", "clase": "caja", "nombre": "Caja 1", "x": 0.68, "y": 0.08, "w": 0.28, "h": 0.38 },
+    {
+      "id": "caja-2",
+      "clase": "caja",
+      "nombre": "Caja 2",
+      "x": 0.68,
+      "y": 0.54,
+      "w": 0.28,
+      "h": 0.38,
+      "atributos": { "abierta": false },
+      "cambios": [{ "t": 42, "atributo": "abierta", "valor": true }]
+    }
+  ],
+  "objetos": [
+    { "id": "estante-1", "clase": "estante", "w": 0.36, "h": 0.06, "ruta": [{ "t": 0, "x": 0.36, "y": 0.27 }] },
+    { "id": "estante-2", "clase": "estante", "w": 0.36, "h": 0.06, "ruta": [{ "t": 0, "x": 0.36, "y": 0.73 }] },
+    {
+      "id": "persona-1", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 2, "x": 0.01, "y": 0.52 }, { "t": 3, "x": 0.04, "y": 0.52 },
+        { "t": 10, "x": 0.3, "y": 0.2 }, { "t": 22, "x": 0.45, "y": 0.2 },
+        { "t": 28, "x": 0.74, "y": 0.18 }
+      ]
+    },
+    {
+      "id": "persona-2", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 4, "x": 0.01, "y": 0.52 }, { "t": 5, "x": 0.04, "y": 0.52 },
+        { "t": 12, "x": 0.25, "y": 0.65 }, { "t": 24, "x": 0.5, "y": 0.8 },
+        { "t": 28.5, "x": 0.8, "y": 0.18 }
+      ]
+    },
+    {
+      "id": "persona-3", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 6, "x": 0.01, "y": 0.52 }, { "t": 7, "x": 0.04, "y": 0.52 },
+        { "t": 14, "x": 0.4, "y": 0.38 }, { "t": 25, "x": 0.55, "y": 0.38 },
+        { "t": 29, "x": 0.86, "y": 0.18 }
+      ]
+    },
+    {
+      "id": "persona-4", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 15, "x": 0.01, "y": 0.52 }, { "t": 16, "x": 0.04, "y": 0.52 },
+        { "t": 20, "x": 0.2, "y": 0.2 }, { "t": 26, "x": 0.5, "y": 0.15 },
+        { "t": 29.5, "x": 0.92, "y": 0.18 }
+      ]
+    },
+    {
+      "id": "persona-5", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 15.5, "x": 0.01, "y": 0.52 }, { "t": 16.5, "x": 0.04, "y": 0.52 },
+        { "t": 21, "x": 0.22, "y": 0.66 }, { "t": 26, "x": 0.52, "y": 0.62 },
+        { "t": 29, "x": 0.77, "y": 0.34 }, { "t": 42, "x": 0.77, "y": 0.34 },
+        { "t": 44, "x": 0.78, "y": 0.7 }
+      ]
+    },
+    {
+      "id": "persona-6", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 16, "x": 0.01, "y": 0.52 }, { "t": 17, "x": 0.04, "y": 0.52 },
+        { "t": 22, "x": 0.3, "y": 0.4 }, { "t": 26, "x": 0.55, "y": 0.3 },
+        { "t": 29.5, "x": 0.83, "y": 0.34 }, { "t": 42, "x": 0.83, "y": 0.34 },
+        { "t": 44, "x": 0.84, "y": 0.7 }
+      ]
+    },
+    {
+      "id": "persona-7", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 16.5, "x": 0.01, "y": 0.52 }, { "t": 17.5, "x": 0.04, "y": 0.52 },
+        { "t": 23, "x": 0.4, "y": 0.62 }, { "t": 27, "x": 0.55, "y": 0.85 },
+        { "t": 30, "x": 0.89, "y": 0.34 }, { "t": 42, "x": 0.89, "y": 0.34 },
+        { "t": 44, "x": 0.9, "y": 0.7 }
+      ]
+    },
+    {
+      "id": "persona-8", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 17, "x": 0.01, "y": 0.52 }, { "t": 18, "x": 0.04, "y": 0.52 },
+        { "t": 24, "x": 0.25, "y": 0.85 }, { "t": 40, "x": 0.5, "y": 0.85 },
+        { "t": 55, "x": 0.3, "y": 0.7 }
+      ]
+    },
+    {
+      "id": "persona-9", "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 17.5, "x": 0.01, "y": 0.52 }, { "t": 18.5, "x": 0.04, "y": 0.52 },
+        { "t": 25, "x": 0.45, "y": 0.2 }, { "t": 45, "x": 0.2, "y": 0.4 }
+      ]
+    }
+  ],
+  "eventos": [
+    { "t": 2, "texto": "Entran los primeros clientes; cada cruce de la línea de entrada suma a la afluencia (RN-04.2)." },
+    { "t": 15, "texto": "Llega un grupo: crecen el mapa de calor y la afluencia." },
+    { "t": 30, "texto": "Siete personas esperan en la caja 1." },
+    { "t": 35, "texto": "Pasan 5 segundos con más de 6 personas: alerta de congestión con recomendación (RN-04.1)." },
+    { "t": 42, "texto": "Se abre la caja 2: tres personas cambian de fila y baja la ocupación." }
+  ],
+  "esperado": {
+    "alertas": [{ "regla": "RN-04.1", "t": 35, "tolerancia": 1, "region": "caja-1" }],
+    "advertencias": [],
+    "informativas": [{ "regla": "RN-04.2", "conteo": 9 }],
+    "resumen": "Curva de afluencia, ocupación por zona y 1 alerta de congestión resuelta."
+  }
+}

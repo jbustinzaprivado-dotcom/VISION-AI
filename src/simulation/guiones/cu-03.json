@@ -1,0 +1,75 @@
+{
+  "caso": "CU-03",
+  "nombre": "Control de calidad",
+  "prioridad": 3,
+  "version": 1,
+  "duracion": 60,
+  "semilla": 2026,
+  "regiones": [
+    { "id": "suelo-1", "clase": "suelo", "nombre": "Suelo", "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "id": "cinta-1", "clase": "cinta", "nombre": "Cinta transportadora", "x": 0, "y": 0.38, "w": 1, "h": 0.24 },
+    { "id": "inspeccion-1", "clase": "inspeccion", "nombre": "Punto de inspección", "x": 0.46, "y": 0.34, "w": 0.08, "h": 0.32 }
+  ],
+  "objetos": [
+    {
+      "id": "producto-1", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 0, "x": 0.1, "y": 0.5 }, { "t": 9, "x": 1, "y": 0.5 }], "sale": 9
+    },
+    {
+      "id": "producto-2", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": { "x": 0.2, "y": 0.3, "w": 0.15, "h": 0.2 }, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 4, "x": 0, "y": 0.5 }, { "t": 14, "x": 1, "y": 0.5 }], "sale": 14
+    },
+    {
+      "id": "producto-3", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 10, "x": 0, "y": 0.5 }, { "t": 20, "x": 1, "y": 0.5 }], "sale": 20
+    },
+    {
+      "id": "producto-4", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": { "x": 0.5, "y": 0.5, "w": 0.1, "h": 0.1 }, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 16, "x": 0, "y": 0.5 }, { "t": 26, "x": 1, "y": 0.5 }], "sale": 26
+    },
+    {
+      "id": "producto-5", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 22, "x": 0, "y": 0.5 }, { "t": 32, "x": 1, "y": 0.5 }], "sale": 32
+    },
+    {
+      "id": "producto-6", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": false, "piezaFaltante": false },
+      "ruta": [{ "t": 28, "x": 0, "y": 0.5 }, { "t": 38, "x": 1, "y": 0.5 }], "sale": 38
+    },
+    {
+      "id": "producto-7", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 34, "x": 0, "y": 0.5 }, { "t": 44, "x": 1, "y": 0.5 }], "sale": 44
+    },
+    {
+      "id": "producto-8", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 40, "x": 0, "y": 0.5 }, { "t": 50, "x": 1, "y": 0.5 }], "sale": 50
+    },
+    {
+      "id": "producto-9", "clase": "producto", "w": 0.08, "h": 0.14,
+      "atributos": { "defecto": null, "etiqueta": true, "piezaFaltante": false },
+      "ruta": [{ "t": 46, "x": 0, "y": 0.5 }, { "t": 56, "x": 1, "y": 0.5 }], "sale": 56
+    }
+  ],
+  "eventos": [
+    { "t": 0, "texto": "Los productos avanzan por la cinta; cada uno se clasifica al pasar por el punto de inspección." },
+    { "t": 9, "texto": "Producto con defecto del 3 %: «no conforme» y alerta (RN-03.1)." },
+    { "t": 21, "texto": "Producto con defecto del 1 %: «conforme con observación» (RN-03.2)." },
+    { "t": 33, "texto": "Producto sin etiqueta: «no conforme» (RN-03.3)." }
+  ],
+  "esperado": {
+    "alertas": [
+      { "regla": "RN-03.1", "t": 9, "objeto": "producto-2" },
+      { "regla": "RN-03.3", "t": 33, "objeto": "producto-6" }
+    ],
+    "advertencias": [],
+    "informativas": [{ "regla": "RN-03.2", "t": 21, "objeto": "producto-4" }],
+    "resumen": "2 productos no conformes y 1 conforme con observación."
+  }
+}

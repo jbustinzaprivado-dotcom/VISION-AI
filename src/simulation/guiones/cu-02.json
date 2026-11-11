@@ -1,0 +1,86 @@
+{
+  "caso": "CU-02",
+  "nombre": "Almacén inteligente",
+  "prioridad": 1,
+  "version": 1,
+  "duracion": 60,
+  "semilla": 2026,
+  "regiones": [
+    { "id": "suelo-1", "clase": "suelo", "nombre": "Suelo", "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "id": "estanteria-1", "clase": "estanteria", "nombre": "Estantería norte", "x": 0.05, "y": 0.04, "w": 0.6, "h": 0.12 },
+    { "id": "pasillo-1", "clase": "pasillo", "nombre": "Pasillo central", "x": 0.05, "y": 0.2, "w": 0.6, "h": 0.18 },
+    { "id": "estanteria-2", "clase": "estanteria", "nombre": "Estantería sur", "x": 0.05, "y": 0.41, "w": 0.6, "h": 0.12 },
+    { "id": "pasillo-2", "clase": "pasillo", "nombre": "Pasillo sur", "x": 0.05, "y": 0.56, "w": 0.6, "h": 0.18 },
+    { "id": "transito-1", "clase": "transito", "nombre": "Zona de tránsito", "x": 0.7, "y": 0.2, "w": 0.25, "h": 0.54 },
+    { "id": "restringida-1", "clase": "restringida", "nombre": "Zona restringida", "x": 0.7, "y": 0.78, "w": 0.25, "h": 0.18 }
+  ],
+  "objetos": [
+    { "id": "caja-1", "clase": "caja", "w": 0.05, "h": 0.05, "ruta": [{ "t": 0, "x": 0.15, "y": 0.29 }] },
+    { "id": "caja-2", "clase": "caja", "w": 0.05, "h": 0.05, "ruta": [{ "t": 0, "x": 0.22, "y": 0.27 }] },
+    { "id": "pallet-1", "clase": "pallet", "w": 0.12, "h": 0.12, "ruta": [{ "t": 0, "x": 0.3, "y": 0.65 }] },
+    { "id": "pallet-2", "clase": "pallet", "w": 0.12, "h": 0.12, "ruta": [{ "t": 0, "x": 0.45, "y": 0.65 }] },
+    {
+      "id": "montacargas-1",
+      "clase": "montacargas",
+      "w": 0.08,
+      "h": 0.08,
+      "ruta": [
+        { "t": 12, "x": 0.04, "y": 0.29 },
+        { "t": 17, "x": 0.6, "y": 0.29 },
+        { "t": 19, "x": 0.84, "y": 0.6 },
+        { "t": 24, "x": 0.84, "y": 0.72 },
+        { "t": 28, "x": 0.84, "y": 0.36 },
+        { "t": 31, "x": 0.84, "y": 0.36 },
+        { "t": 36, "x": 0.98, "y": 0.29 }
+      ],
+      "sale": 37
+    },
+    {
+      "id": "persona-1",
+      "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 19, "x": 0.55, "y": 0.87 },
+        { "t": 19.8, "x": 0.68, "y": 0.84 },
+        { "t": 20, "x": 0.8, "y": 0.81 },
+        { "t": 23.8, "x": 0.8, "y": 0.81 },
+        { "t": 25, "x": 0.62, "y": 0.87 }
+      ],
+      "sale": 26
+    },
+    {
+      "id": "pallet-3",
+      "clase": "pallet",
+      "w": 0.22,
+      "h": 0.22,
+      "ruta": [{ "t": 30, "x": 0.82, "y": 0.4 }],
+      "sale": 50
+    },
+    {
+      "id": "persona-2",
+      "clase": "persona", "w": 0.03, "h": 0.1,
+      "ruta": [
+        { "t": 40, "x": 0.06, "y": 0.6 },
+        { "t": 55, "x": 0.62, "y": 0.6 }
+      ],
+      "sale": 56
+    }
+  ],
+  "eventos": [
+    { "t": 0, "texto": "Pasillos con cajas y pallets: se dibuja el mapa de regiones y la ocupación por pasillo." },
+    { "t": 12, "texto": "Entra el montacargas por el pasillo central; sube su ocupación." },
+    { "t": 20, "texto": "Una persona entra a la zona restringida mientras el montacargas se mueve cerca." },
+    { "t": 23, "texto": "Pasan 3 segundos: se activa la regla de proximidad (RN-02.2)." },
+    { "t": 30, "texto": "El montacargas deja un pallet en la zona de tránsito." },
+    { "t": 35, "texto": "La zona de tránsito lleva 5 segundos obstruida: alerta de obstrucción (RN-02.3)." },
+    { "t": 50, "texto": "Se retira el pallet: la comparación con el inicio marca la zona como liberada." }
+  ],
+  "esperado": {
+    "alertas": [
+      { "regla": "RN-02.2", "t": 23, "objeto": "persona-1" },
+      { "regla": "RN-02.3", "t": 35, "region": "transito-1" }
+    ],
+    "advertencias": [],
+    "informativas": [{ "regla": "RN-02.5", "t": 30, "region": "transito-1" }],
+    "resumen": "Ocupación por pasillo, 1 alerta de zona restringida, 1 de obstrucción y zona liberada al final."
+  }
+}

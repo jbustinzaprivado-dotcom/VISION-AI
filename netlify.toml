@@ -1,0 +1,17 @@
+# Publicación en Netlify (alternativa a Vercel; decisión D4).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Todas las rutas (/analisis, /alertas...) abren la aplicación.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"

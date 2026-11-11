@@ -1,0 +1,68 @@
+{
+  "caso": "CU-01",
+  "nombre": "Seguridad industrial",
+  "prioridad": 3,
+  "version": 1,
+  "duracion": 60,
+  "semilla": 2026,
+  "regiones": [
+    { "id": "suelo-1", "clase": "suelo", "nombre": "Suelo", "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "id": "acceso-1", "clase": "entrada", "nombre": "Acceso", "x": 0.03, "y": 0.3, "w": 0.06, "h": 0.2 },
+    { "id": "area-trabajo-1", "clase": "area-trabajo", "nombre": "Área de trabajo", "x": 0.25, "y": 0.12, "w": 0.5, "h": 0.52 },
+    { "id": "via-1", "clase": "via", "nombre": "Vía de circulación", "x": 0.03, "y": 0.7, "w": 0.94, "h": 0.14 },
+    { "id": "salida-1", "clase": "salida-emergencia", "nombre": "Salida de emergencia", "x": 0.88, "y": 0.15, "w": 0.08, "h": 0.2 }
+  ],
+  "objetos": [
+    {
+      "id": "trabajador-a", "clase": "persona", "w": 0.03, "h": 0.1,
+      "atributos": { "casco": true, "chaleco": true, "pocoVisible": false },
+      "ruta": [
+        { "t": 0, "x": 0.06, "y": 0.4 }, { "t": 4, "x": 0.35, "y": 0.3 },
+        { "t": 30, "x": 0.4, "y": 0.5 }, { "t": 60, "x": 0.35, "y": 0.3 }
+      ]
+    },
+    {
+      "id": "trabajador-b", "clase": "persona", "w": 0.03, "h": 0.1,
+      "atributos": { "casco": false, "chaleco": true, "pocoVisible": false },
+      "cambios": [{ "t": 14, "atributo": "casco", "valor": true }],
+      "ruta": [
+        { "t": 7, "x": 0.06, "y": 0.4 }, { "t": 8, "x": 0.27, "y": 0.4 },
+        { "t": 20, "x": 0.55, "y": 0.45 }, { "t": 60, "x": 0.6, "y": 0.25 }
+      ]
+    },
+    {
+      "id": "trabajador-c", "clase": "persona", "w": 0.03, "h": 0.1,
+      "atributos": { "casco": true, "chaleco": true, "pocoVisible": true },
+      "ruta": [
+        { "t": 21, "x": 0.06, "y": 0.4 }, { "t": 22, "x": 0.3, "y": 0.55 },
+        { "t": 35, "x": 0.6, "y": 0.55 }
+      ]
+    },
+    {
+      "id": "carro-1", "clase": "carro", "w": 0.1, "h": 0.15,
+      "ruta": [
+        { "t": 36, "x": 0.7, "y": 0.77 }, { "t": 40, "x": 0.92, "y": 0.25 },
+        { "t": 50, "x": 0.92, "y": 0.25 }, { "t": 53, "x": 0.7, "y": 0.77 }
+      ],
+      "sale": 55
+    }
+  ],
+  "eventos": [
+    { "t": 0, "texto": "Entra el trabajador A con casco y chaleco." },
+    { "t": 8, "texto": "Entra el trabajador B sin casco al área de trabajo." },
+    { "t": 10, "texto": "B lleva 2 segundos sin casco: alerta alta con evidencia (RN-01.1)." },
+    { "t": 14, "texto": "B se coloca el casco: la situación termina, la alerta queda pendiente de revisión." },
+    { "t": 22, "texto": "Entra C, marcado como poco visible: advertencia para revisión, sin alerta (RN-01.3)." },
+    { "t": 40, "texto": "Un carro bloquea la salida de emergencia." },
+    { "t": 45, "texto": "La salida lleva 5 segundos bloqueada: alerta alta de área bloqueada (RN-01.2)." }
+  ],
+  "esperado": {
+    "alertas": [
+      { "regla": "RN-01.1-casco", "t": 10, "objeto": "trabajador-b" },
+      { "regla": "RN-01.2", "t": 45, "tolerancia": 1, "region": "salida-1" }
+    ],
+    "advertencias": [{ "regla": "RN-01.3", "t": 22, "objeto": "trabajador-c" }],
+    "informativas": [],
+    "resumen": "1 alerta de EPP, 1 de salida bloqueada y 1 advertencia."
+  }
+}

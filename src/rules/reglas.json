@@ -1,0 +1,106 @@
+{
+  "_nota": "Reglas de negocio (Proyecto, sección 11). Valores iniciales (D3): se ajustan en la fase 6 desde la pantalla de reglas. Tiempos en segundos de simulación; proporciones entre 0 y 1.",
+  "version": 1,
+  "generales": [
+    { "codigo": "RN-G1", "texto": "Una situación solo genera alerta si se mantiene durante la duración mínima de su regla." },
+    { "codigo": "RN-G2", "texto": "Se crea una sola alerta por región u objeto mientras la situación continúe; si termina y vuelve a ocurrir, se crea otra." },
+    { "codigo": "RN-G3", "texto": "Las alertas siguen el ciclo nueva → revisada → cerrada; para cerrar hay que escribir una observación." },
+    { "codigo": "RN-G4", "texto": "Solo el administrador cambia reglas; el cambio aplica a sesiones nuevas." },
+    { "codigo": "RN-G5", "texto": "Las alertas describen lo observado, no atribuyen culpas." }
+  ],
+  "severidades": {
+    "alta": "Riesgo para personas o situación crítica",
+    "media": "Problema operativo",
+    "baja": "Observación",
+    "informativa": "Observación informativa"
+  },
+  "reglas": [
+    {
+      "id": "RN-02.1", "caso": "CU-02", "nombre": "Persona en zona restringida",
+      "condicion": { "tipo": "presencia", "clase": "persona", "region": "restringida" },
+      "duracion": 3, "severidad": "media", "accion": "alerta",
+      "mensaje": "Persona detectada en zona restringida", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-02.2", "caso": "CU-02", "nombre": "Persona en zona restringida con montacargas cerca",
+      "condicion": {
+        "tipo": "presenciaCerca", "clase": "persona", "region": "restringida",
+        "cerca": "montacargas", "radio": 0.2, "enMovimiento": true
+      },
+      "duracion": 3, "severidad": "alta", "accion": "alerta", "reemplaza": "RN-02.1",
+      "mensaje": "Persona en zona restringida con montacargas en movimiento cerca", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-02.3", "caso": "CU-02", "nombre": "Zona de tránsito obstruida",
+      "condicion": { "tipo": "obstruccion", "region": "transito", "umbral": 0.3 },
+      "duracion": 5, "severidad": "alta", "accion": "alerta",
+      "mensaje": "Zona de tránsito obstruida", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-02.4", "caso": "CU-02", "nombre": "Ocupación alta de pasillo",
+      "condicion": { "tipo": "ocupacion", "region": "pasillo", "umbral": 0.8 },
+      "duracion": 10, "severidad": "media", "accion": "alerta",
+      "mensaje": "Ocupación alta en el pasillo", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-02.5", "caso": "CU-02", "nombre": "Cambio de ocupación respecto del inicio",
+      "condicion": { "tipo": "cambioOcupacion", "region": ["pasillo", "transito", "restringida"], "umbral": 0.2 },
+      "duracion": 0, "severidad": "informativa", "accion": "informativa",
+      "mensaje": "La ocupación de la región cambió respecto del inicio", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-04.1", "caso": "CU-04", "nombre": "Congestión",
+      "condicion": { "tipo": "conteo", "clase": "persona", "region": ["pasillo", "caja"], "umbral": 6 },
+      "duracion": 5, "severidad": "media", "accion": "alerta",
+      "mensaje": "Congestión: más de 6 personas en la región. Recomendación: abrir otra caja", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-04.2", "caso": "CU-04", "nombre": "Cruce de la línea de entrada",
+      "condicion": { "tipo": "cruce", "clase": "persona", "region": "entrada" },
+      "duracion": 0, "severidad": "informativa", "accion": "informativa",
+      "mensaje": "Una persona cruzó la entrada (suma a la afluencia)", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-01.1-casco", "codigo": "RN-01.1", "caso": "CU-01", "nombre": "Trabajador sin casco",
+      "condicion": { "tipo": "atributo", "clase": "persona", "region": "area-trabajo", "atributo": "casco", "valor": false },
+      "duracion": 2, "severidad": "alta", "accion": "alerta",
+      "mensaje": "Persona sin casco detectada en el área de trabajo", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-01.1-chaleco", "codigo": "RN-01.1", "caso": "CU-01", "nombre": "Trabajador sin chaleco",
+      "condicion": { "tipo": "atributo", "clase": "persona", "region": "area-trabajo", "atributo": "chaleco", "valor": false },
+      "duracion": 2, "severidad": "media", "accion": "alerta",
+      "mensaje": "Persona sin chaleco detectada en el área de trabajo", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-01.2", "caso": "CU-01", "nombre": "Salida de emergencia bloqueada",
+      "condicion": { "tipo": "obstruccion", "region": "salida-emergencia", "umbral": 0.5 },
+      "duracion": 5, "severidad": "alta", "accion": "alerta",
+      "mensaje": "Salida de emergencia bloqueada", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-01.3", "caso": "CU-01", "nombre": "Figura poco visible",
+      "condicion": { "tipo": "atributo", "clase": "persona", "region": "area-trabajo", "atributo": "pocoVisible", "valor": true },
+      "duracion": 0, "severidad": "baja", "accion": "advertencia",
+      "mensaje": "Figura poco visible: requiere revisión humana", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-03.1", "caso": "CU-03", "nombre": "Defecto mayor al 2 %",
+      "condicion": { "tipo": "defecto", "clase": "producto", "region": "inspeccion", "comparacion": "mayor", "umbral": 0.02 },
+      "duracion": 0, "severidad": "media", "accion": "alerta", "clasificacion": "No conforme",
+      "mensaje": "Producto con defecto mayor al 2 %: no conforme", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-03.2", "caso": "CU-03", "nombre": "Defecto de hasta el 2 %",
+      "condicion": { "tipo": "defecto", "clase": "producto", "region": "inspeccion", "comparacion": "menorIgual", "umbral": 0.02 },
+      "duracion": 0, "severidad": "informativa", "accion": "informativa", "clasificacion": "Conforme con observación",
+      "mensaje": "Producto con defecto de hasta el 2 %: conforme con observación", "activa": true, "version": 1
+    },
+    {
+      "id": "RN-03.3", "caso": "CU-03", "nombre": "Sin etiqueta o con pieza faltante",
+      "condicion": { "tipo": "faltante", "clase": "producto", "region": "inspeccion" },
+      "duracion": 0, "severidad": "media", "accion": "alerta", "clasificacion": "No conforme",
+      "mensaje": "Producto sin etiqueta o con pieza faltante: no conforme", "activa": true, "version": 1
+    }
+  ]
+}

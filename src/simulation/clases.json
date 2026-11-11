@@ -1,0 +1,26 @@
+{
+  "_nota": "Decisión D2 (valores iniciales): clases y colores de regiones y figuras. Un color fijo por clase.",
+  "regiones": {
+    "suelo": { "nombre": "Suelo", "color": "#e5e7eb" },
+    "pasillo": { "nombre": "Pasillo", "color": "#93c5fd" },
+    "estanteria": { "nombre": "Estantería", "color": "#a8a29e" },
+    "transito": { "nombre": "Zona de tránsito", "color": "#fde68a" },
+    "restringida": { "nombre": "Zona restringida", "color": "#fca5a5" },
+    "entrada": { "nombre": "Entrada", "color": "#86efac" },
+    "caja": { "nombre": "Zona de caja", "color": "#c4b5fd" },
+    "area-trabajo": { "nombre": "Área de trabajo", "color": "#bae6fd" },
+    "via": { "nombre": "Vía de circulación", "color": "#d1d5db" },
+    "salida-emergencia": { "nombre": "Salida de emergencia", "color": "#4ade80" },
+    "cinta": { "nombre": "Cinta transportadora", "color": "#cbd5e1" },
+    "inspeccion": { "nombre": "Punto de inspección", "color": "#fdba74" }
+  },
+  "objetos": {
+    "persona": { "nombre": "Persona", "color": "#2563eb" },
+    "caja": { "nombre": "Caja", "color": "#b45309" },
+    "pallet": { "nombre": "Pallet", "color": "#92400e" },
+    "montacargas": { "nombre": "Montacargas", "color": "#f59e0b" },
+    "carro": { "nombre": "Carro", "color": "#64748b" },
+    "estante": { "nombre": "Estante", "color": "#78716c" },
+    "producto": { "nombre": "Producto", "color": "#0d9488" }
+  }
+}
