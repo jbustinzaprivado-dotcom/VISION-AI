@@ -2,7 +2,7 @@
 
 **Antes de empezar**
 
-- Abrir la aplicación publicada (o ejecutar `npm run dev`).
+- Abrir la aplicación publicada en https://vision-ai-bice-delta.vercel.app (o ejecutar `npm run dev`).
 - Si se va a mostrar el dashboard con datos desde el inicio, entrar como **Operador** y pulsar **Cargar sesiones de ejemplo** en Inicio.
 
 ## 1. Qué es y qué no es (1 min)

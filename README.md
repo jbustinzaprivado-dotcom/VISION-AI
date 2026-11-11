@@ -4,6 +4,8 @@ Aplicación web que **simula** cómo un sistema de visión artificial entiende u
 
 Es un **prototipo académico**. Funciona solo en el navegador. No usa imágenes ni videos, no tiene servidor y no tiene inteligencia artificial real. El rótulo **PROTOTIPO** siempre está visible.
 
+**Aplicación publicada:** https://vision-ai-bice-delta.vercel.app
+
 **Documentos de entrega:**
 
 - [Guion de presentación](docs/GUION_PRESENTACION.md)
@@ -299,7 +301,11 @@ RN-02.2 lleva `reemplaza: "RN-02.1"`: si se cumple la versión grave, no se crea
 
 ## Publicar (fase 8)
 
-La aplicación es un sitio estático, así que se publica gratis. Ya están los archivos de configuración de las dos opciones; falta elegir una (decisión D4).
+La aplicación es un sitio estático, así que se publica gratis.
+
+**Decisión D4: se publica en Vercel**, en https://vision-ai-bice-delta.vercel.app. Cada `git push` a `main` vuelve a publicar el sitio solo.
+
+La aplicación solo necesita ese alojamiento: no hay servidor, base de datos externa, variables de entorno ni claves. Cada navegador guarda sus propios datos. Se conserva también la configuración de Netlify por si se quisiera cambiar.
 
 - **Vercel:**
   1. En vercel.com, entrar con GitHub y pulsar **Add New → Project**.
@@ -317,9 +323,9 @@ Si una pantalla falla, la aplicación muestra un mensaje con **Reintentar** en l
 - [x] Las pruebas PF-01 a PF-10 pasan y las pruebas automáticas están en verde (126). Ver [docs/PRUEBAS.md](docs/PRUEBAS.md).
 - [x] El rótulo PROTOTIPO se ve siempre y no se usa ninguna imagen ni video.
 - [x] El documento (este README) está actualizado y hay un [guion de presentación](docs/GUION_PRESENTACION.md).
-- [ ] **Publicar** en Vercel o Netlify (decisión D4).
+- [x] Publicada en Vercel (D4): https://vision-ai-bice-delta.vercel.app. Se comprobó que carga sin pedir login, que abrir una ruta directa (`/analisis`) no da 404, que el almacén genera sus alertas a los 23 s y a los 35 s, que el historial guarda la sesión y que no hay errores.
 - [ ] **Probar en Firefox.** Chrome y Edge usan el mismo motor que el navegador con el que se probó.
-- [ ] Subir el código a GitHub con la rama `main` funcionando.
+- [x] Código en GitHub con la rama `main` funcionando.
 - [ ] Ensayar el guion de presentación.
 - [ ] Decidir el nombre, el logotipo y los colores finales (D5). Los actuales son provisionales.
 
@@ -334,4 +340,4 @@ Si una pantalla falla, la aplicación muestra un mensaje con **Reintentar** en l
 | 5. Visor | Mapas, capas, controles y animación de entrenamiento | Hecha |
 | 6. Reglas y alertas | Motor de reglas y ciclo de alertas | Hecha |
 | 7. Historial y reportes | Dashboard, historial, CSV y bandeja simulada | Hecha |
-| 8. Pruebas y presentación | Pruebas, publicación y guion de presentación | Hecha (falta publicar y probar en Firefox) |
+| 8. Pruebas y presentación | Pruebas, publicación y guion de presentación | Hecha (falta probar en Firefox) |
