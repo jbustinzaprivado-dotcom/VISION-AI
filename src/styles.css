@@ -589,3 +589,15 @@ a.kpi:hover { border-color: var(--accion); transform: translateY(-2px); }
 .seccion-yolo .generador button { display: inline-flex; align-items: center; gap: 0.4rem; }
 .panel-yolo { background: var(--superficie); border: 1px solid color-mix(in srgb, #f59e0b 45%, var(--borde)); border-radius: var(--radio); padding: 0.95rem; box-shadow: var(--sombra); }
 .panel-yolo h2 { font-size: 1rem; margin: 0 0 0.4rem; display: flex; align-items: center; gap: 0.45rem; color: #b45309; }
+
+/* Vista 3D (DT-10) */
+.visor-3d { aspect-ratio: 16 / 9; }
+.visor-3d canvas { width: 100% !important; height: 100% !important; cursor: grab; }
+.visor-3d canvas:active { cursor: grabbing; }
+.visor-3d-vistas { position: absolute; top: 8px; right: 8px; display: flex; gap: 0.3rem; }
+.visor-3d-vistas button { padding: 0.25rem 0.6rem; font-size: 0.78rem; }
+.visor-3d-franja { position: absolute; left: 0; right: 0; bottom: 0; height: 4%; min-height: 18px; display: flex; align-items: center; justify-content: space-between; padding: 0 0.6rem; background: rgba(2, 6, 23, 0.6); color: #e2e8f0; font: 700 0.7rem/1 ui-monospace, monospace; pointer-events: none; }
+.visor-3d-franja .rec::first-letter { color: #ef4444; }
+.visor-3d-franja .rotulo-3d { color: #fbbf24; }
+.visor-3d-ayuda { position: absolute; top: 10px; left: 10px; margin: 0; padding: 0.2rem 0.5rem; border-radius: var(--radio-sm); background: rgba(2, 6, 23, 0.55); color: #cbd5e1; font-size: 0.72rem; pointer-events: none; }
+.selector-vista { display: inline-flex; gap: 0.3rem; align-items: center; }

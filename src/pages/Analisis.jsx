@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { CASOS } from '../simulation/casos.js';
 import { eventoActual, generarCuadro } from '../simulation/motor.js';
 import { useSimulacion } from '../simulation/useSimulacion.js';
@@ -20,6 +20,9 @@ import { useVisionYolo } from '../vision/yolo/useVisionYolo.js';
 import PanelYolo from '../components/PanelYolo.jsx';
 import { claveGuion } from '../data/useSesionAnalisis.js';
 
+// Vista 3D (DT-10): Three.js se descarga solo al elegirla.
+const Visor3D = lazy(() => import('../vista3d/Visor3D.jsx'));
+
 // Opciones iniciales de cada generador (almacén, línea de calidad...).
 const OPCIONES_GENERADORES = Object.fromEntries(Object.entries(GENERADORES).map(([id, g]) => [id, g.opcionesIniciales]));
 
@@ -37,6 +40,7 @@ export default function Analisis() {
     [generador, idCaso, semilla, opciones],
   );
   const [presentacion, setPresentacion] = useState(true);
+  const [en3D, setEn3D] = useState(false);
   const [capas, setCapas] = useState(['regiones', 'detecciones', 'figuras']);
   const { reloj, escena, controles, fps } = useSimulacion(guion, semilla);
   const { usuario } = useSesion();
@@ -165,6 +169,11 @@ export default function Analisis() {
             <input type="checkbox" checked={presentacion} onChange={(e) => setPresentacion(e.target.checked)} />{' '}
             Modo presentación
           </label>
+          <span className="selector-vista" role="group" aria-label="Vista de la escena">
+            Vista
+            <button type="button" className={en3D ? 'secundario' : ''} aria-pressed={!en3D} onClick={() => setEn3D(false)}>2D</button>
+            <button type="button" className={en3D ? '' : 'secundario'} aria-pressed={en3D} onClick={() => setEn3D(true)}>3D</button>
+          </span>
         </div>
         <fieldset className="capas">
           <legend>Capas</legend>
@@ -178,11 +187,17 @@ export default function Analisis() {
 
       <div className="analisis-cuerpo">
         <div className="analisis-escena">
-          <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion}
-            cajasOpenCV={conOpenCV ? visionCv.vision?.pixeles.cajas ?? [] : []}
-            cajasYolo={conYolo ? visionYolo.vision?.cajas ?? [] : []} />
+          {en3D ? (
+            <Suspense fallback={<p className="nota visor-cargando">Cargando la vista 3D…</p>}>
+              <Visor3D escena={escena} guion={guion} alertas={activas} />
+            </Suspense>
+          ) : (
+            <VisorEscena escena={escena} resultado={resultado} capas={capas} alertas={activas} guion={guion}
+              cajasOpenCV={conOpenCV ? visionCv.vision?.pixeles.cajas ?? [] : []}
+              cajasYolo={conYolo ? visionYolo.vision?.cajas ?? [] : []} />
+          )}
           {capturar && <CapturaCamara cuadro={cuadro} onCaptura={onCaptura} />}
-          <Leyenda capas={capas} />
+          <Leyenda capas={capas} en3D={en3D} />
 
           {presentacion && (
             <p className="subtitulo" aria-live="polite">
@@ -214,7 +229,7 @@ export default function Analisis() {
 }
 
 // Explica qué significa cada capa activa; nada se comunica solo con color.
-function Leyenda({ capas }) {
+function Leyenda({ capas, en3D }) {
   const textos = {
     ocupacion: 'Ocupación: de verde (vacía) a rojo (llena), con el porcentaje escrito.',
     calor: 'Mapa de calor: más intenso cuantas más personas hay en la región; se indica el número.',
@@ -226,6 +241,17 @@ function Leyenda({ capas }) {
     figuras: 'Personas: casco amarillo, chaleco naranja con franjas; translúcida = poco visible. Productos: etiqueta blanca, defecto rojo. Montacargas: baliza intermitente al moverse.',
   };
   const activos = capas.filter((c) => textos[c]);
+  if (en3D) {
+    return (
+      <ul className="leyenda">
+        <li>
+          Vista 3D: la misma escena y el mismo instante que la vista 2D, con las alertas activas en rojo. Las capas
+          (ocupación, detecciones, OpenCV, YOLO…) se dibujan en la vista 2D; sus paneles siguen funcionando.
+        </li>
+        <li>Personas: casco amarillo y chaleco naranja con franjas; translúcida = poco visible.</li>
+      </ul>
+    );
+  }
   if (activos.length === 0) return null;
   return (
     <ul className="leyenda">

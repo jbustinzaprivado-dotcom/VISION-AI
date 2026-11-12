@@ -19,7 +19,7 @@ Las decisiones DT-1 a DT-6 están en el documento del proyecto (sección 14):
 - **DT-2:** sin imágenes ni videos.
 - **DT-3:** todo en el navegador.
 - **DT-4:** el almacén es el caso principal.
-- **DT-5:** Konva y seedrandom.
+- **DT-5:** Konva y seedrandom. *Ampliada por DT-10 (vista 3D con Three.js), ver abajo.*
 - **DT-6:** análisis con la geometría de las figuras, sin OpenCV ni YOLO. *Modificada por DT-8 y DT-9, ver abajo.*
 
 Se agrega:
@@ -29,6 +29,7 @@ Se agrega:
 | DT-7 | **Cámara simulada en lugar de cámara real.** El docente dio dos opciones: simular una cámara dentro del sistema, que analice los casos propuestos como animación, o usar una cámara real que analice lo que ocurre en la vida real en casos específicos. Se eligió la **cámara simulada** | Permite proponer libremente los casos de uso. Con una cámara real, salvo en un escenario ideal, los casos serían mayormente cotidianos: situaciones como un montacargas cerca de una persona en zona restringida, una salida de emergencia bloqueada o una fila de siete personas en caja ocurren pocas veces y no se pueden provocar a voluntad. La simulación además repite cada caso exactamente igual en las pruebas y en la presentación |
 | DT-8 | **OpenCV.js como capa de comparación (modifica DT-6).** Se agrega una capa opcional que analiza los **píxeles** de la cámara simulada con OpenCV y compara su estimación con la verdad geométrica. Las alertas siguen saliendo del análisis geométrico | Muestra visión por computadora real y su margen de error medido contra una verdad conocida, algo que solo permite la cámara simulada (DT-7). Corre en el navegador, se descarga solo al activar la capa y queda en caché, sin servidor ni costo de hosting. YOLO queda como fase posterior |
 | DT-9 | **YOLO entrenado con escenas generadas, como segunda capa de comparación (modifica DT-6).** Las escenas de los cuatro generadores se exportan como dataset (imágenes de la cámara limpia + etiquetas de la geometría exacta), se entrena YOLOv8n fuera de la aplicación (Colab, Kaggle o una computadora) y el modelo corre en el navegador con ONNX Runtime Web. Las alertas siguen saliendo del análisis geométrico | Es el paso de visión clásica (DT-8) a una red neuronal real, con su error medido contra una verdad conocida. Los generadores dan datos etiquetados ilimitados y sin costo. El entrenamiento no ocurre en el hosting; el modelo es un archivo estático que se descarga solo al activar la capa |
+| DT-10 | **Vista 3D con Three.js, además de la vista 2D (amplía DT-5).** En Análisis visual se puede cambiar entre 2D y 3D. La vista 3D dibuja la misma escena, en el mismo instante y con las mismas alertas, con modelos simples. Konva sigue siendo la vista principal: las capas del análisis y la cámara de OpenCV y YOLO trabajan sobre el dibujo 2D | La escena se entiende mejor en perspectiva, sobre todo al presentar: alturas de las estanterías, filas en las cajas, la cinta con su arco de inspección. No cambia el análisis ni las reglas. Three.js se descarga solo al elegir la vista 3D y dibuja solo cuando cambia algo, sin servidor ni costo de hosting |
 
 En el sistema, la "cámara simulada" es el motor de escenas. Genera 12 cuadros por segundo de cada caso a partir de su guion, y cada cuadro pasa por el análisis y el motor de reglas, como lo haría la imagen de una cámara.
 
@@ -229,6 +230,46 @@ En el visor, las **cajas ámbar** llevan la clase y la confianza. El panel later
 - **Dataset:** incluye todos los generadores y casos, la validación no comparte sesiones con el entrenamiento, es repetible y las etiquetas siempre quedan dentro de la imagen.
 - **Inferencia:** preparación de la entrada (relleno y canales), decodificación a coordenadas de la cámara, umbral y NMS.
 - **Modelo de punta a punta** ([`yoloModelo.test.js`](src/tests/yoloModelo.test.js)): cuatro imágenes reales de la validación, una por generador, pasan por los mismos pasos que en el navegador (ONNX Runtime incluido) y deben encontrar sus objetos con la clase correcta. Así se comprueba que la preparación y la decodificación en JavaScript coinciden con lo que aprendió el modelo en Python.
+
+## Vista 3D (DT-10)
+
+En **Análisis visual → Vista: 3D** se ve la misma escena en perspectiva, hecha con Three.js ([`src/vista3d/`](src/vista3d/)).
+
+**Qué muestra:**
+- **Modelos simples con los colores del 2D:**
+  - personas con casco y chaleco (translúcidas si son poco visibles);
+  - montacargas con mástil, horquillas y baliza que parpadea al moverse;
+  - pallets con carga, cajas, carros, estantes con productos;
+  - productos con etiqueta, defecto o pieza faltante.
+- **Regiones:** cada una es su piso coloreado con el nombre. Algunas tienen volumen:
+  - estanterías del almacén;
+  - cinta con rodillos que avanzan a su velocidad y el arco de inspección;
+  - mostradores de las cajas (gris si la caja está cerrada);
+  - puertas de las salidas de emergencia.
+- **Alertas activas:** caja roja con el código sobre la figura, y borde rojo en las regiones.
+- **Movimiento:** las personas, montacargas y carros miran hacia donde se mueven.
+
+**Cómo se usa:**
+- **Vistas fijas:** *Cámara* (alta, como una cámara de seguridad), *Cenital* (igual que el 2D) y *Lateral*.
+- **Mouse:** arrastrar gira la vista y la rueda acerca o aleja.
+- **Capas:** ocupación, detecciones, OpenCV y YOLO se siguen dibujando en la vista 2D. Sus paneles funcionan igual en las dos vistas.
+
+**Cómo está hecho:**
+- [`mapeo.js`](src/vista3d/mapeo.js) pasa las coordenadas 0..1 del guion a un mundo de 16 × 9 m y calcula alturas, apoyo (los productos van sobre la cinta) y hacia dónde mira cada figura.
+- [`modelos.js`](src/vista3d/modelos.js) arma cada figura y región.
+- [`escena3d.js`](src/vista3d/escena3d.js) las sincroniza con cada cuadro:
+  - las mueve y las rota;
+  - reconstruye la que cambió de aspecto (por ejemplo, cuando alguien se pone el casco);
+  - marca las alertas.
+- **Rendimiento:** solo dibuja cuando algo cambia. En reproducción va a la frecuencia de la pantalla (unos 100 cuadros/s medidos).
+
+**Carga y hosting:** Three.js (unos 130 KB comprimidos) se descarga solo al elegir la vista 3D. Sin WebGL, la pantalla avisa y sigue funcionando la vista 2D.
+
+**Pruebas** ([`vista3d.test.js`](src/tests/vista3d.test.js)), con Three.js sin pantalla:
+- **Mapeo:** coordenadas, apoyo sobre la cinta y rumbo.
+- **Escena:** una figura 3D por objeto en su lugar en distintos instantes, y alertas que aparecen y se quitan con el motor de reglas.
+- **Aspecto:** productos sobre la cinta y figuras poco visibles translúcidas.
+- **Cambio de escena:** se limpia todo al pasar a otra.
 
 ## Almacén generado (escenas procedurales)
 
